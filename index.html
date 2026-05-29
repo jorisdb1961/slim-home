@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slim-Home — Smart home, simply done</title>
+<meta name="description" content="Slim-Home maakt jouw woning intelligent. Professionele installatie van Home Assistant met hoogwaardige slimme apparaten. Gevestigd in Diemen, actief in Noord-Holland.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --bg2: #EEECEA;
+    --bg3: #E4E2DE;
+    --ink: #1A1917;
+    --ink2: #6B6860;
+    --ink3: #9C9A94;
+    --accent: #2D5BE3;
+    --accent-light: #EEF2FD;
+    --white: #FFFFFF;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'DM Serif Display', serif;
+    --max: 1100px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+ 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(247,246,243,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--bg3);
+    padding: 0;
+  }
+  .nav-inner {
+    max-width: var(--max); margin: 0 auto; padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  .logo span { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 2rem; }
+  .nav-right a {
+    font-size: 14px; font-weight: 400;
+    color: var(--ink2); text-decoration: none;
+    transition: color var(--transition);
+  }
+  .nav-right a:hover { color: var(--ink); }
+  .lang-toggle {
+    display: flex; gap: 2px;
+    background: var(--bg2); border-radius: 20px; padding: 3px;
+  }
+  .lang-btn {
+    font-size: 12px; font-weight: 500;
+    border: none; background: none; cursor: pointer;
+    padding: 4px 10px; border-radius: 16px;
+    color: var(--ink3); transition: all var(--transition);
+  }
+  .lang-btn.active { background: var(--white); color: var(--ink); }
+
+  /* HERO */
+  .hero {
+    padding: 120px 0 100px;
+    position: relative; overflow: hidden;
+  }
+  .hero-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+  .hero-eyebrow {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(42px, 5vw, 64px);
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--ink2); }
+  .hero-sub {
+    font-size: 18px; font-weight: 300; color: var(--ink2);
+    line-height: 1.65; margin-bottom: 2.5rem; max-width: 460px;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ink); color: var(--white);
+    padding: 14px 28px; border-radius: 50px;
+    font-size: 15px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: none; color: var(--ink2);
+    padding: 14px 24px; border-radius: 50px;
+    font-size: 15px; font-weight: 400;
+    text-decoration: none; border: 1px solid var(--bg3); cursor: pointer;
+    transition: all var(--transition); margin-left: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--ink3); color: var(--ink); }
+  .hero-visual {
+    position: relative; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-ring {
+    width: 320px; height: 320px; border-radius: 50%;
+    border: 1px solid var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    animation: spin 20s linear infinite;
+  }
+  .hero-ring-inner {
+    width: 220px; height: 220px; border-radius: 50%;
+    background: var(--white);
+    border: 1px solid var(--bg3);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    animation: spin 20s linear infinite reverse;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+  }
+  .hero-icon { font-size: 48px; }
+  .hero-ring-label {
+    font-size: 13px; color: var(--ink3); font-weight: 400;
+  }
+  .orbit-dot {
+    position: absolute; width: 44px; height: 44px;
+    background: var(--white); border-radius: 50%;
+    border: 1px solid var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .orbit-dot:nth-child(2) { top: -22px; left: 50%; transform: translateX(-50%); }
+  .orbit-dot:nth-child(3) { right: -22px; top: 50%; transform: translateY(-50%); }
+  .orbit-dot:nth-child(4) { bottom: -22px; left: 50%; transform: translateX(-50%); }
+  .orbit-dot:nth-child(5) { left: -22px; top: 50%; transform: translateY(-50%); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* STATS */
+  .stats {
+    padding: 48px 0;
+    border-top: 1px solid var(--bg3);
+    border-bottom: 1px solid var(--bg3);
+  }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: var(--serif); font-size: 42px; color: var(--ink);
+    line-height: 1;
+  }
+  .stat-label { font-size: 14px; color: var(--ink3); margin-top: 4px; }
+
+  /* HOW */
+  .how { padding: 100px 0; }
+  .section-label {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: var(--serif); font-size: clamp(32px, 4vw, 48px);
+    line-height: 1.1; letter-spacing: -0.3px; margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 17px; font-weight: 300; color: var(--ink2);
+    max-width: 520px; line-height: 1.65;
+  }
+  .how-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: start; margin-top: 4rem;
+  }
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 1.5rem; padding: 1.5rem 0;
+    border-bottom: 1px solid var(--bg3); cursor: pointer;
+    transition: all var(--transition);
+  }
+  .step:last-child { border-bottom: none; }
+  .step:hover .step-title { color: var(--accent); }
+  .step-num {
+    font-family: var(--serif); font-size: 32px; color: var(--bg3);
+    line-height: 1; min-width: 32px; transition: color var(--transition);
+  }
+  .step:hover .step-num { color: var(--accent); }
+  .step-title {
+    font-size: 16px; font-weight: 500; margin-bottom: 4px;
+    transition: color var(--transition);
+  }
+  .step-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+  .how-visual {
+    background: var(--white); border-radius: var(--radius);
+    padding: 2rem; border: 1px solid var(--bg3);
+    position: sticky; top: 88px;
+  }
+  .chat-bubble {
+    background: var(--bg); border-radius: 12px;
+    padding: 12px 16px; font-size: 14px; color: var(--ink2);
+    margin-bottom: 10px; max-width: 85%;
+    line-height: 1.5;
+  }
+  .chat-bubble.user {
+    background: var(--accent); color: white;
+    margin-left: auto; border-radius: 12px 12px 2px 12px;
+  }
+  .chat-bubble.assistant {
+    background: var(--bg2); border-radius: 12px 12px 12px 2px;
+  }
+  .chat-label { font-size: 11px; color: var(--ink3); margin-bottom: 4px; }
+  .chat-label.right { text-align: right; }
+  .chat-divider {
+    text-align: center; font-size: 12px; color: var(--ink3);
+    margin: 16px 0; display: flex; align-items: center; gap: 8px;
+  }
+  .chat-divider::before, .chat-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--bg3);
+  }
+
+  /* PACKAGES */
+  .packages { padding: 100px 0; background: var(--white); }
+  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 4rem; }
+  .package-card {
+    background: var(--bg); border-radius: var(--radius);
+    padding: 2rem; border: 1px solid var(--bg3);
+    display: flex; flex-direction: column; gap: 1.5rem;
+    transition: all var(--transition); position: relative; overflow: hidden;
+  }
+  .package-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+  .package-card.featured {
+    background: var(--ink); border-color: var(--ink); color: var(--white);
+  }
+  .package-card.featured .pkg-price,
+  .package-card.featured .pkg-name { color: var(--white); }
+  .package-card.featured .pkg-desc,
+  .package-card.featured .pkg-item { color: rgba(255,255,255,0.6); }
+  .package-card.featured .pkg-item::before { background: rgba(255,255,255,0.3); }
+  .featured-badge {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: var(--accent); color: white;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+  }
+  .pkg-name { font-size: 13px; font-weight: 500; color: var(--ink3); letter-spacing: 0.08em; text-transform: uppercase; }
+  .pkg-price { font-family: var(--serif); font-size: 42px; color: var(--ink); line-height: 1; }
+  .pkg-price span { font-family: var(--sans); font-size: 16px; font-weight: 300; }
+  .pkg-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+  .pkg-items { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+  .pkg-item {
+    font-size: 14px; color: var(--ink2);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .pkg-item::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); margin-top: 7px; flex-shrink: 0;
+  }
+  .pkg-cta {
+    display: block; text-align: center;
+    padding: 12px; border-radius: 50px;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: all var(--transition); margin-top: auto;
+  }
+  .pkg-cta-dark { background: var(--ink); color: white; }
+  .pkg-cta-dark:hover { background: var(--accent); }
+  .pkg-cta-light { background: white; color: var(--ink); }
+  .pkg-cta-light:hover { background: var(--accent-light); color: var(--accent); }
+  .pkg-cta-outline { background: none; color: var(--ink2); border: 1px solid var(--bg3); }
+  .pkg-cta-outline:hover { border-color: var(--ink3); color: var(--ink); }
+
+  /* AI SECTION */
+  .ai-section {
+    padding: 100px 0;
+    background: var(--ink); color: white;
+  }
+  .ai-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  }
+  .ai-section .section-label { color: rgba(255,255,255,0.4); }
+  .ai-section .section-title { color: white; }
+  .ai-section .section-sub { color: rgba(255,255,255,0.55); }
+  .ai-feature {
+    display: flex; gap: 1rem; padding: 1.25rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .ai-feature:last-child { border-bottom: none; }
+  .ai-feature-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(255,255,255,0.08); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .ai-feature-title { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+  .ai-feature-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.55; }
+  .ai-demo {
+    background: rgba(255,255,255,0.05); border-radius: var(--radius);
+    padding: 1.5rem; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .ai-demo-title { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* CONTACT */
+  .contact { padding: 100px 0; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+  .contact-info { display: flex; flex-direction: column; gap: 2rem; }
+  .contact-detail { display: flex; gap: 1rem; align-items: flex-start; }
+  .contact-detail-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    background: var(--bg2); display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .contact-detail-label { font-size: 12px; color: var(--ink3); margin-bottom: 2px; }
+  .contact-detail-val { font-size: 15px; font-weight: 400; }
+  .form { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--ink2); }
+  .form-input, .form-select, .form-textarea {
+    background: var(--white); border: 1px solid var(--bg3);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    font-family: var(--sans); font-size: 15px; color: var(--ink);
+    outline: none; transition: border-color var(--transition);
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 120px; }
+  .form-submit {
+    background: var(--ink); color: white;
+    border: none; border-radius: 50px;
+    padding: 14px 32px; font-family: var(--sans);
+    font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: all var(--transition);
+    align-self: flex-start;
+  }
+  .form-submit:hover { background: var(--accent); transform: translateY(-1px); }
+  .form-note { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 0; border-top: 1px solid var(--bg3);
+    display: flex; align-items: center;
+  }
+  .footer-inner {
+    max-width: var(--max); margin: 0 auto; padding: 0 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 18px; }
+  .footer-logo span { color: var(--accent); }
+  .footer-copy { font-size: 13px; color: var(--ink3); }
+
+  /* LANG TOGGLE LOGIC */
+  [data-lang="en"] { display: none; }
+  body.en [data-lang="nl"] { display: none; }
+  body.en [data-lang="en"] { display: block; }
+  body.en span[data-lang="en"] { display: inline; }
+  body.en span[data-lang="nl"] { display: none; }
+  span[data-lang="nl"] { display: inline; }
+
+  /* RESPONSIVE */
+  @media (max-width: 860px) {
+    .hero-grid, .how-grid, .ai-inner, .contact-grid { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .packages-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(3,1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .how-visual { display: none; }
+    .nav-right a { display: none; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-eyebrow { animation: fadeUp 0.6s ease both; }
+  .hero h1 { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-sub { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-btns { animation: fadeUp 0.6s 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">Slim<span>-Home</span></a>
+    <div class="nav-right">
+      <a href="#how">
+        <span data-lang="nl">Hoe het werkt</span>
+        <span data-lang="en">How it works</span>
+      </a>
+      <a href="#packages">
+        <span data-lang="nl">Pakketten</span>
+        <span data-lang="en">Packages</span>
+      </a>
+      <a href="#contact">Contact</a>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btn-nl" onclick="setLang('nl')">NL</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <p class="hero-eyebrow">
+          <span data-lang="nl">Smart home specialist · Noord-Holland</span>
+          <span data-lang="en">Smart home expert · Noord-Holland</span>
+        </p>
+        <h1>
+          <span data-lang="nl">Jouw huis,<br><em>intelligenter</em><br>gemaakt.</span>
+          <span data-lang="en">Your home,<br><em>made smarter.</em></span>
+        </h1>
+        <p class="hero-sub">
+          <span data-lang="nl">Slim-Home installeert een slim huis dat echt werkt — zonder verborgen kosten, zonder gedoe. Gewoon prettig wonen.</span>
+          <span data-lang="en">Slim-Home installs a smart home that actually works — no hidden costs, no fuss. Just a better place to live.</span>
+        </p>
+        <div class="hero-btns">
+          <a href="#contact" class="btn-primary">
+            <span data-lang="nl">Vrijblijvend gesprek</span>
+            <span data-lang="en">Free consultation</span>
+            →
+          </a>
+          <a href="#packages" class="btn-secondary">
+            <span data-lang="nl">Bekijk pakketten</span>
+            <span data-lang="en">View packages</span>
+          </a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-ring">
+          <div class="orbit-dot">💡</div>
+          <div class="orbit-dot">🔐</div>
+          <div class="orbit-dot">🌡️</div>
+          <div class="orbit-dot">📱</div>
+          <div class="hero-ring-inner">
+            <div class="hero-icon">🏠</div>
+            <div class="hero-ring-label">Slim-Home</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-num">1 dag</div>
+        <div class="stat-label" data-lang="nl">Gemiddelde installatietijd</div>
+        <div class="stat-label" data-lang="en">Average install time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">€25</div>
+        <div class="stat-label" data-lang="nl">Optioneel support-abonnement per maand</div>
+        <div class="stat-label" data-lang="en">Optional support plan per month</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">NL</div>
+        <div class="stat-label" data-lang="nl">Praat in het Nederlands met je huis</div>
+        <div class="stat-label" data-lang="en">Talk to your home in any language</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <p class="section-label">
+      <span data-lang="nl">Hoe het werkt</span>
+      <span data-lang="en">How it works</span>
+    </p>
+    <h2 class="section-title">
+      <span data-lang="nl">Eenvoudig.<br>Van intake tot eindresultaat.</span>
+      <span data-lang="en">Simple.<br>From intake to end result.</span>
+    </h2>
+    <p class="section-sub">
+      <span data-lang="nl">Geen technische kennis nodig. Ik regel alles — jij geniet van het resultaat.</span>
+      <span data-lang="en">No technical knowledge needed. I handle everything — you enjoy the result.</span>
+    </p>
+    <div class="how-grid">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-title" data-lang="nl">Intake gesprek</div>
+            <div class="step-title" data-lang="en">Intake call</div>
+            <div class="step-desc" data-lang="nl">We bespreken je woning, wensen en budget. Online of bij je thuis, gratis en vrijblijvend.</div>
+            <div class="step-desc" data-lang="en">We discuss your home, wishes and budget. Online or at your place, free and no obligation.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-title" data-lang="nl">Voorstel op maat</div>
+            <div class="step-title" data-lang="en">Tailored proposal</div>
+            <div class="step-desc" data-lang="nl">Je krijgt een heldere offerte met precies wat je nodig hebt — niet meer, niet minder.</div>
+            <div class="step-desc" data-lang="en">You receive a clear quote with exactly what you need — nothing more, nothing less.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-title" data-lang="nl">Installatie</div>
+            <div class="step-title" data-lang="en">Installation</div>
+            <div class="step-desc" data-lang="nl">Ik installeer alles op een dag die jou uitkomt. Inclusief uitleg en persoonlijke instellingen.</div>
+            <div class="step-desc" data-lang="en">I install everything on a day that suits you. Including explanation and personal settings.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div>
+            <div class="step-title" data-lang="nl">Klaar — en daarna</div>
+            <div class="step-title" data-lang="en">Done — and beyond</div>
+            <div class="step-desc" data-lang="nl">Jouw huis werkt. En als er iets is, ben ik er. Optioneel support-abonnement beschikbaar voor doorlopend beheer.</div>
+            <div class="step-desc" data-lang="en">Your home works. And if anything comes up, I'm here. Optional support plan available.</div>
+          </div>
+        </div>
+      </div>
+      <div class="how-visual">
+        <div class="chat-label">
+          <span data-lang="nl">Klant — via AI</span>
+          <span data-lang="en">Client — via AI</span>
+        </div>
+        <div class="chat-bubble user" data-lang="nl">"Zet de woonkamer op 30% als we 's avonds een film kijken"</div>
+        <div class="chat-bubble user" data-lang="en">"Dim the living room to 30% when we watch a movie in the evening"</div>
+        <div class="chat-bubble assistant" data-lang="nl">✓ Automatie aangemaakt. Elke avond na 20:00 dimmen de woonkamerlampen naar 30% zodra de TV aangaat.</div>
+        <div class="chat-bubble assistant" data-lang="en">✓ Automation created. Every evening after 8pm, living room lights dim to 30% when the TV turns on.</div>
+        <div class="chat-divider">
+          <span data-lang="nl">later die dag</span>
+          <span data-lang="en">later that day</span>
+        </div>
+        <div class="chat-label right">
+          <span data-lang="nl">Klant</span>
+          <span data-lang="en">Client</span>
+        </div>
+        <div class="chat-bubble user" data-lang="nl">"Doe het licht in de gang uit als we slapen"</div>
+        <div class="chat-bubble user" data-lang="en">"Turn off the hallway light when we go to sleep"</div>
+        <div class="chat-bubble assistant" data-lang="nl">✓ Gedaan. Ganglicht gaat uit om 23:00, of eerder als er 15 minuten geen beweging is.</div>
+        <div class="chat-bubble assistant" data-lang="en">✓ Done. Hallway light turns off at 11pm, or earlier after 15 minutes without motion.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section class="packages" id="packages">
+  <div class="container">
+    <p class="section-label">
+      <span data-lang="nl">Pakketten</span>
+      <span data-lang="en">Packages</span>
+    </p>
+    <h2 class="section-title">
+      <span data-lang="nl">Eerlijk geprijsd.<br>Geen verrassingen.</span>
+      <span data-lang="en">Fairly priced.<br>No surprises.</span>
+    </h2>
+    <p class="section-sub">
+      <span data-lang="nl">Alle hardware inbegrepen in de prijs. Geen verborgen kosten, geen maandelijkse abonnementen.</span>
+      <span data-lang="en">All hardware included in the price. No hidden costs, no monthly subscriptions.</span>
+    </p>
+    <div class="packages-grid">
+      <!-- Starter -->
+      <div class="package-card">
+        <div>
+          <div class="pkg-name">Starter</div>
+          <div class="pkg-price">€399 <span data-lang="nl">eenmalig</span><span data-lang="en">one-time</span></div>
+        </div>
+        <p class="pkg-desc">
+          <span data-lang="nl">De perfecte eerste stap. Jouw huis wordt slim — zonder gedoe.</span>
+          <span data-lang="en">The perfect first step. Your home gets smart — without the hassle.</span>
+        </p>
+        <ul class="pkg-items">
+          <li class="pkg-item"><span data-lang="nl">Slimme lampen en apparaten van hoge kwaliteit</span><span data-lang="en">High-quality smart lights and devices</span></li>
+          <li class="pkg-item"><span data-lang="nl">Home Assistant installatie & configuratie</span><span data-lang="en">Home Assistant install & configuration</span></li>
+          <li class="pkg-item"><span data-lang="nl">3 persoonlijke automatiseringen</span><span data-lang="en">3 personal automations</span></li>
+          <li class="pkg-item"><span data-lang="nl">1 uur persoonlijke uitleg</span><span data-lang="en">1 hour personal walkthrough</span></li>
+        </ul>
+        <a href="#contact" class="pkg-cta pkg-cta-outline">
+          <span data-lang="nl">Vraag offerte aan</span>
+          <span data-lang="en">Request quote</span>
+        </a>
+      </div>
+      <!-- Comfort (featured) -->
+      <div class="package-card featured">
+        <div class="featured-badge">
+          <span data-lang="nl">Meest gekozen</span>
+          <span data-lang="en">Most popular</span>
+        </div>
+        <div>
+          <div class="pkg-name">Comfort</div>
+          <div class="pkg-price">€899 <span data-lang="nl">eenmalig</span><span data-lang="en">one-time</span></div>
+        </div>
+        <p class="pkg-desc">
+          <span data-lang="nl">Een volledig slim huis. Energie, comfort en veiligheid in één.</span>
+          <span data-lang="en">A fully smart home. Energy, comfort and security in one.</span>
+        </p>
+        <ul class="pkg-items">
+          <li class="pkg-item"><span data-lang="nl">Uitgebreide set slimme lampen & sensoren</span><span data-lang="en">Extended set of smart lights & sensors</span></li>
+          <li class="pkg-item"><span data-lang="nl">Energiemonitoring via P1-meter</span><span data-lang="en">Energy monitoring via P1 meter</span></li>
+          <li class="pkg-item"><span data-lang="nl">Slimme thermostaat-integratie</span><span data-lang="en">Smart thermostat integration</span></li>
+          <li class="pkg-item"><span data-lang="nl">10+ automatiseringen op maat</span><span data-lang="en">10+ custom automations</span></li>
+          <li class="pkg-item"><span data-lang="nl">Dashboard op tablet</span><span data-lang="en">Tablet dashboard</span></li>
+          <li class="pkg-item"><span data-lang="nl">AI-koppeling — praat in gewone taal met je huis</span><span data-lang="en">AI link — talk to your home in plain language</span></li>
+          <li class="pkg-item"><span data-lang="nl">3 maanden support inbegrepen</span><span data-lang="en">3 months support included</span></li>
+        </ul>
+        <a href="#contact" class="pkg-cta pkg-cta-light">
+          <span data-lang="nl">Vraag offerte aan</span>
+          <span data-lang="en">Request quote</span>
+        </a>
+      </div>
+      <!-- Premium -->
+      <div class="package-card">
+        <div>
+          <div class="pkg-name">Premium</div>
+          <div class="pkg-price">€2.200<span style="font-size:20px">+</span></div>
+        </div>
+        <p class="pkg-desc">
+          <span data-lang="nl">Volledige woningautomatie. Maatwerk van A tot Z.</span>
+          <span data-lang="en">Full home automation. Custom from A to Z.</span>
+        </p>
+        <ul class="pkg-items">
+          <li class="pkg-item"><span data-lang="nl">Alles uit Comfort, plus meer</span><span data-lang="en">Everything in Comfort, plus more</span></li>
+          <li class="pkg-item"><span data-lang="nl">Camera's, slimme deursloten</span><span data-lang="en">Cameras, smart door locks</span></li>
+          <li class="pkg-item"><span data-lang="nl">Multiroom audio-integratie</span><span data-lang="en">Multiroom audio integration</span></li>
+          <li class="pkg-item"><span data-lang="nl">Maatwerk dashboards</span><span data-lang="en">Custom dashboards</span></li>
+          <li class="pkg-item"><span data-lang="nl">Jaarcontract onderhoud & updates</span><span data-lang="en">Annual maintenance & updates contract</span></li>
+        </ul>
+        <a href="#contact" class="pkg-cta pkg-cta-dark">
+          <span data-lang="nl">Neem contact op</span>
+          <span data-lang="en">Get in touch</span>
+        </a>
+      </div>
+      <!-- Support abonnement -->
+      <div class="package-card" style="border: 1.5px dashed var(--bg3); background: var(--bg);">
+        <div>
+          <div class="pkg-name" style="color:var(--accent)">
+            <span data-lang="nl">Support abonnement</span>
+            <span data-lang="en">Support plan</span>
+          </div>
+          <div class="pkg-price">€25 <span data-lang="nl">/ maand</span><span data-lang="en">/ month</span></div>
+        </div>
+        <p class="pkg-desc">
+          <span data-lang="nl">Altijd iemand die je systeem kent. Ik los het op — op afstand, snel.</span>
+          <span data-lang="en">Always someone who knows your system. I'll fix it — remotely, fast.</span>
+        </p>
+        <ul class="pkg-items">
+          <li class="pkg-item"><span data-lang="nl">Remote toegang & beheer via Nabu Casa</span><span data-lang="en">Remote access & management via Nabu Casa</span></li>
+          <li class="pkg-item"><span data-lang="nl">Maandelijkse updates & beveiliging</span><span data-lang="en">Monthly updates & security patches</span></li>
+          <li class="pkg-item"><span data-lang="nl">Storing? Reactie binnen 24 uur</span><span data-lang="en">Issue? Response within 24 hours</span></li>
+          <li class="pkg-item"><span data-lang="nl">Nieuwe automatisering op aanvraag (1/mnd)</span><span data-lang="en">New automations on request (1/month)</span></li>
+          <li class="pkg-item"><span data-lang="nl">Maandelijks opzegbaar</span><span data-lang="en">Cancel anytime</span></li>
+        </ul>
+        <a href="#contact" class="pkg-cta" style="background:var(--accent-light);color:var(--accent);font-weight:500;border-radius:50px;padding:12px;display:block;text-align:center;text-decoration:none;transition:all 0.22s;">
+          <span data-lang="nl">Abonnement aanvragen</span>
+          <span data-lang="en">Subscribe</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SECTION -->
+<section class="ai-section">
+  <div class="container">
+    <div class="ai-inner">
+      <div>
+        <p class="section-label">AI assistent</p>
+        <h2 class="section-title">
+          <span data-lang="nl">Praat gewoon<br>met je huis.</span>
+          <span data-lang="en">Just talk<br>to your home.</span>
+        </h2>
+        <p class="section-sub" style="margin-bottom:2.5rem">
+          <span data-lang="nl">Slim-Home koppelt jouw huis aan slimme AI-technologie. Geen apps leren, geen schema's instellen — gewoon zeggen wat je wilt.</span>
+          <span data-lang="en">Slim-Home connects your home to smart AI technology. No apps to learn, no schedules to set — just say what you want.</span>
+        </p>
+        <div>
+          <div class="ai-feature">
+            <div class="ai-feature-icon">💬</div>
+            <div>
+              <div class="ai-feature-title" data-lang="nl">In gewoon Nederlands</div>
+              <div class="ai-feature-title" data-lang="en">In plain language</div>
+              <div class="ai-feature-desc" data-lang="nl">Geen technische termen. "Maak het gezellig als ik thuiskom" werkt gewoon.</div>
+              <div class="ai-feature-desc" data-lang="en">No technical terms. "Make it cosy when I get home" just works.</div>
+            </div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-feature-icon">⚡</div>
+            <div>
+              <div class="ai-feature-title" data-lang="nl">Automatiseringen aanmaken zonder code</div>
+              <div class="ai-feature-title" data-lang="en">Create automations without code</div>
+              <div class="ai-feature-desc" data-lang="nl">De AI schrijft de automatisering voor je en installeert hem direct in je systeem.</div>
+              <div class="ai-feature-desc" data-lang="en">The AI writes the automation for you and installs it directly into your system.</div>
+            </div>
+          </div>
+          <div class="ai-feature">
+            <div class="ai-feature-icon">🔒</div>
+            <div>
+              <div class="ai-feature-title" data-lang="nl">Gratis, lokaal, privé</div>
+              <div class="ai-feature-title" data-lang="en">Free, local, private</div>
+              <div class="ai-feature-desc" data-lang="nl">Geen extra maandelijkse kosten. Jouw data blijft in je eigen huis.</div>
+              <div class="ai-feature-desc" data-lang="en">No extra monthly costs. Your data stays in your own home.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-demo">
+        <div class="ai-demo-title">
+          <span data-lang="nl">Live voorbeeld</span>
+          <span data-lang="en">Live example</span>
+        </div>
+        <div class="chat-bubble user" data-lang="nl" style="background:var(--accent)">"Als de zon ondergaat, doe dan de buitenverlichting aan en dim de woonkamer naar 60%"</div>
+        <div class="chat-bubble user" data-lang="en" style="background:var(--accent)">"When the sun sets, turn on the outdoor lights and dim the living room to 60%"</div>
+        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)" data-lang="nl">
+          ✓ Automatisering aangemaakt: <em>Zonsondergang verlichting</em><br><br>
+          Actief op: zonsondergang (wisselend)<br>
+          Buitenverlichting → aan<br>
+          Woonkamer → 60% helderheid
+        </div>
+        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)" data-lang="en">
+          ✓ Automation created: <em>Sunset lighting</em><br><br>
+          Triggers at: sunset (variable)<br>
+          Outdoor lights → on<br>
+          Living room → 60% brightness
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <p class="section-label">Contact</p>
+        <h2 class="section-title">
+          <span data-lang="nl">Maak je huis<br>slimmer.</span>
+          <span data-lang="en">Make your home<br>smarter.</span>
+        </h2>
+        <p class="section-sub" style="margin-bottom:2.5rem">
+          <span data-lang="nl">Stuur een berichtje. Ik reageer binnen 24 uur voor een vrijblijvend gesprek.</span>
+          <span data-lang="en">Send a message. I'll respond within 24 hours for a no-obligation chat.</span>
+        </p>
+        <div class="contact-info">
+          <div class="contact-detail">
+            <div class="contact-detail-icon">📍</div>
+            <div>
+              <div class="contact-detail-label">
+                <span data-lang="nl">Werkgebied</span>
+                <span data-lang="en">Service area</span>
+              </div>
+              <div class="contact-detail-val">Noord-Holland</div>
+            </div>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-detail-icon">⏱</div>
+            <div>
+              <div class="contact-detail-label">
+                <span data-lang="nl">Beschikbaarheid</span>
+                <span data-lang="en">Availability</span>
+              </div>
+              <div class="contact-detail-val" data-lang="nl">Vr, za & zo voor installatie · Doordeweeks op afstand</div>
+              <div class="contact-detail-val" data-lang="en">Fri, Sat & Sun for installs · Weekdays remote support</div>
+            </div>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-detail-icon">💬</div>
+            <div>
+              <div class="contact-detail-label">
+                <span data-lang="nl">Talen</span>
+                <span data-lang="en">Languages</span>
+              </div>
+              <div class="contact-detail-val">Nederlands · English</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <form class="form" action="https://formspree.io/f/xgoqdjpn" method="POST" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" data-lang="nl">Naam</label>
+              <label class="form-label" data-lang="en">Name</label>
+              <input class="form-input" type="text" name="naam" required placeholder="Jan de Vries">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-mail</label>
+              <input class="form-input" type="email" name="email" required placeholder="jan@example.nl">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-lang="nl">Pakket interesse</label>
+            <label class="form-label" data-lang="en">Package interest</label>
+            <select class="form-select" name="pakket">
+              <option>Starter — €399</option>
+              <option selected>Comfort — €899 (meest gekozen)</option>
+              <option>Premium — €2.200+</option>
+              <option data-lang="nl">Weet ik nog niet</option>
+              <option data-lang="en">Not sure yet</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-lang="nl">Bericht</label>
+            <label class="form-label" data-lang="en">Message</label>
+            <textarea class="form-textarea" name="bericht" placeholder="Vertel kort over je woning en wensen..."></textarea>
+          </div>
+          <button type="submit" class="form-submit" id="submit-btn">
+            <span data-lang="nl">Verstuur bericht</span>
+            <span data-lang="en">Send message</span>
+          </button>
+          <p class="form-note" data-lang="nl">Geen spam. Reactie binnen 24 uur.</p>
+          <p class="form-note" data-lang="en">No spam. Response within 24 hours.</p>
+          <p id="form-success" style="display:none;color:#2D5BE3;font-size:14px;margin-top:8px"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Slim<span>-Home</span></div>
+    <div class="footer-copy">© 2025 Slim-Home · KVK Diemen · <span data-lang="nl">Slim wonen, zonder gedoe.</span><span data-lang="en">Smart living, without the fuss.</span></div>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.className = lang === 'en' ? 'en' : '';
+  document.getElementById('btn-nl').classList.toggle('active', lang === 'nl');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  const success = document.getElementById('form-success');
+  const isEn = document.body.classList.contains('en');
+  btn.textContent = '...';
+  btn.disabled = true;
+  try {
+    const response = await fetch(e.target.action, {
+      method: 'POST',
+      body: new FormData(e.target),
+      headers: { 'Accept': 'application/json' }
+    });
+    if (response.ok) {
+      btn.textContent = '✓';
+      btn.style.background = '#22c55e';
+      success.textContent = isEn
+        ? 'Thanks! I\'ll get back to you within 24 hours.'
+        : 'Bedankt! Ik reageer binnen 24 uur.';
+      success.style.color = '#22c55e';
+      success.style.display = 'block';
+      e.target.querySelectorAll('input, textarea, select').forEach(el => el.disabled = true);
+    } else {
+      throw new Error('Network response was not ok');
+    }
+  } catch (err) {
+    btn.textContent = isEn ? 'Send message' : 'Verstuur bericht';
+    btn.disabled = false;
+    success.textContent = isEn
+      ? 'Something went wrong. Please try again.'
+      : 'Er ging iets mis. Probeer het opnieuw.';
+    success.style.color = '#e33';
+    success.style.display = 'block';
+  }
+}
+
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
