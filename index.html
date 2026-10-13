@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slim-Home — Smart home, simply done</title>
-<meta name="description" content="Slim-Home maakt jouw woning intelligent. Professionele installatie van Home Assistant met hoogwaardige slimme apparaten. Gevestigd in Diemen, actief in Noord-Holland.">
+<meta name="description" content="Slim-Home maakt jouw woning intelligent. Professionele installatie van Home Assistant met slimme apparaten — van budgetvriendelijk IKEA tot premium merken. Gevestigd in Diemen, actief in Noord-Holland.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #F7F6F3;
@@ -17,6 +17,8 @@
     --ink2: #6B6860;
     --ink3: #9C9A94;
     --accent: #2D5BE3;
+    --accent-2: #7C6CF6;
+    --accent-3: #17B8A6;
     --accent-light: #EEF2FD;
     --white: #FFFFFF;
     --radius: 16px;
@@ -25,10 +27,15 @@
     --serif: 'DM Serif Display', serif;
     --max: 1100px;
     --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-bg-strong: rgba(255,255,255,0.75);
+    --glass-border: rgba(255,255,255,0.65);
+    --glass-shadow: 0 8px 32px rgba(31,35,45,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
   }
- 
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; overflow-x: hidden; }
   body {
     font-family: var(--sans);
     background: var(--bg);
@@ -36,147 +43,279 @@
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
   }
-  .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
 
-  /* NAV */
+  /* AMBIENT MESH BACKGROUND + GRAIN */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -10%;
+    z-index: -2;
+    background:
+      radial-gradient(38% 30% at 12% 18%, rgba(45,91,227,0.16), transparent 60%),
+      radial-gradient(32% 28% at 88% 12%, rgba(124,108,246,0.14), transparent 60%),
+      radial-gradient(42% 34% at 78% 82%, rgba(23,184,166,0.13), transparent 60%),
+      radial-gradient(30% 26% at 8% 88%, rgba(45,91,227,0.10), transparent 60%);
+    filter: blur(10px);
+    animation: meshMove 26s var(--ease) infinite alternate;
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  @keyframes meshMove {
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    50%  { transform: translate3d(-2%,2%,0) scale(1.06); }
+    100% { transform: translate3d(2%,-2%,0) scale(1.02); }
+  }
+
+  .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  /* SCROLL PROGRESS */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    z-index: 300; transition: width 0.1s linear;
+  }
+
+  /* GLASS UTILITY */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* REVEAL ON SCROLL */
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+
+  /* NAV — floating glass pill */
   nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(247,246,243,0.88);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--bg3);
-    padding: 0;
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 200; width: calc(100% - 32px); max-width: var(--max);
   }
   .nav-inner {
-    max-width: var(--max); margin: 0 auto; padding: 0 2rem;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    box-shadow: 0 10px 40px rgba(31,35,45,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
+    padding: 0 8px 0 22px;
     display: flex; align-items: center; justify-content: space-between;
-    height: 64px;
+    height: 60px;
+    transition: all 0.3s var(--ease);
   }
+  nav.scrolled .nav-inner { height: 52px; box-shadow: 0 6px 28px rgba(31,35,45,0.14), inset 0 1px 0 rgba(255,255,255,0.6); }
   .logo {
     font-family: var(--serif);
-    font-size: 22px;
+    font-size: 21px;
     color: var(--ink);
     text-decoration: none;
     letter-spacing: -0.3px;
   }
-  .logo span { color: var(--accent); }
-  .nav-right { display: flex; align-items: center; gap: 2rem; }
+  .logo span {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav-right { display: flex; align-items: center; gap: 1.6rem; }
   .nav-right a {
     font-size: 14px; font-weight: 400;
     color: var(--ink2); text-decoration: none;
     transition: color var(--transition);
+    white-space: nowrap;
+    position: relative;
+  }
+  .nav-right a::after {
+    content: ''; position: absolute; left: 0; bottom: -4px; width: 0; height: 1.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.25s var(--ease);
   }
   .nav-right a:hover { color: var(--ink); }
-  .lang-toggle {
-    display: flex; gap: 2px;
-    background: var(--bg2); border-radius: 20px; padding: 3px;
+  .nav-right a:hover::after { width: 100%; }
+
+  /* SEGMENTED TOGGLES (lang + mode) */
+  .seg-toggle {
+    position: relative; display: inline-flex; gap: 2px;
+    background: var(--bg2); border-radius: 999px; padding: 3px;
   }
-  .lang-btn {
-    font-size: 12px; font-weight: 500;
-    border: none; background: none; cursor: pointer;
-    padding: 4px 10px; border-radius: 16px;
-    color: var(--ink3); transition: all var(--transition);
+  .seg-thumb {
+    position: absolute; top: 3px; left: 0; height: calc(100% - 6px);
+    background: var(--white); border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    transition: transform 0.4s var(--ease), width 0.4s var(--ease);
+    z-index: 0;
   }
-  .lang-btn.active { background: var(--white); color: var(--ink); }
+  .seg-btn {
+    position: relative; z-index: 1;
+    font-family: var(--sans); border: none; background: none; cursor: pointer;
+    color: var(--ink3); transition: color var(--transition);
+  }
+  .seg-btn.active { color: var(--ink); }
+  .lang-btn.seg-btn { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; }
+  .mode-btn.seg-btn { font-size: 14px; font-weight: 500; padding: 10px 22px; border-radius: 999px; }
 
   /* HERO */
-  .hero {
-    padding: 120px 0 100px;
-    position: relative; overflow: hidden;
+  .hero { padding: 168px 0 110px; position: relative; overflow: hidden; }
+  .spotlight {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(360px circle at var(--x, 50%) var(--y, 30%), rgba(45,91,227,0.10), transparent 70%);
+    transition: background 0.15s ease-out;
   }
   .hero-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    position: relative; z-index: 1;
   }
   .hero-eyebrow {
-    font-size: 12px; font-weight: 500; letter-spacing: 0.12em;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.1em;
     text-transform: uppercase; color: var(--accent);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+    padding: 7px 16px 7px 12px; border-radius: 999px;
+  }
+  .pulse-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    flex-shrink: 0; animation: pulse 2.2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(45,91,227,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(45,91,227,0); }
+    100% { box-shadow: 0 0 0 0 rgba(45,91,227,0); }
   }
   .hero h1 {
     font-family: var(--serif);
-    font-size: clamp(42px, 5vw, 64px);
+    font-size: clamp(42px, 5vw, 66px);
     line-height: 1.08;
     letter-spacing: -0.5px;
     color: var(--ink);
     margin-bottom: 1.5rem;
   }
-  .hero h1 em { font-style: italic; color: var(--ink2); }
+  .hero h1 em {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .hero-sub {
     font-size: 18px; font-weight: 300; color: var(--ink2);
     line-height: 1.65; margin-bottom: 2.5rem; max-width: 460px;
   }
   .btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
-    background: var(--ink); color: var(--white);
-    padding: 14px 28px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--ink), #000);
+    color: var(--white);
+    padding: 14px 28px; border-radius: 999px;
     font-size: 15px; font-weight: 500;
     text-decoration: none; border: none; cursor: pointer;
-    transition: all var(--transition);
+    transition: all 0.3s var(--ease);
+    box-shadow: 0 6px 20px rgba(26,25,23,0.18);
   }
-  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(45,91,227,0.35);
+  }
   .btn-secondary {
     display: inline-flex; align-items: center; gap: 8px;
-    background: none; color: var(--ink2);
-    padding: 14px 24px; border-radius: 50px;
+    background: var(--glass-bg); color: var(--ink2);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    padding: 14px 24px; border-radius: 999px;
     font-size: 15px; font-weight: 400;
-    text-decoration: none; border: 1px solid var(--bg3); cursor: pointer;
+    text-decoration: none; border: 1px solid var(--glass-border); cursor: pointer;
     transition: all var(--transition); margin-left: 8px;
   }
-  .btn-secondary:hover { border-color: var(--ink3); color: var(--ink); }
-  .hero-visual {
-    position: relative; aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center;
+  .btn-secondary:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-1px); }
+
+  .hero-visual { position: relative; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; z-index: 1; }
+  .hero-visual::before {
+    content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,91,227,0.20), rgba(124,108,246,0.10) 55%, transparent 75%);
+    filter: blur(24px);
   }
   .hero-ring {
     width: 320px; height: 320px; border-radius: 50%;
     border: 1px solid var(--bg3);
     display: flex; align-items: center; justify-content: center;
     position: relative;
-    animation: spin 20s linear infinite;
+    animation: spin 24s linear infinite;
+  }
+  .hero-ring::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 50%; padding: 1px;
+    background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.55;
   }
   .hero-ring-inner {
     width: 220px; height: 220px; border-radius: 50%;
-    background: var(--white);
-    border: 1px solid var(--bg3);
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--glass-border);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 8px;
-    animation: spin 20s linear infinite reverse;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    animation: spin 24s linear infinite reverse;
+    box-shadow: 0 12px 44px rgba(31,35,45,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
   }
   .hero-icon { font-size: 48px; }
-  .hero-ring-label {
-    font-size: 13px; color: var(--ink3); font-weight: 400;
-  }
+  .hero-ring-label { font-size: 13px; color: var(--ink3); font-weight: 400; }
   .orbit-dot {
-    position: absolute; width: 44px; height: 44px;
-    background: var(--white); border-radius: 50%;
-    border: 1px solid var(--bg3);
+    position: absolute; width: 46px; height: 46px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-radius: 50%;
+    border: 1px solid var(--glass-border);
     display: flex; align-items: center; justify-content: center;
     font-size: 18px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 6px 20px rgba(31,35,45,0.10);
+    animation: spin 24s linear infinite reverse;
   }
-  .orbit-dot:nth-child(2) { top: -22px; left: 50%; transform: translateX(-50%); }
-  .orbit-dot:nth-child(3) { right: -22px; top: 50%; transform: translateY(-50%); }
-  .orbit-dot:nth-child(4) { bottom: -22px; left: 50%; transform: translateX(-50%); }
-  .orbit-dot:nth-child(5) { left: -22px; top: 50%; transform: translateY(-50%); }
+  .orbit-dot:nth-child(2) { top: -23px; left: 50%; transform: translateX(-50%); }
+  .orbit-dot:nth-child(3) { right: -23px; top: 50%; transform: translateY(-50%); }
+  .orbit-dot:nth-child(4) { bottom: -23px; left: 50%; transform: translateX(-50%); }
+  .orbit-dot:nth-child(5) { left: -23px; top: 50%; transform: translateY(-50%); }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* STATS */
-  .stats {
-    padding: 48px 0;
-    border-top: 1px solid var(--bg3);
-    border-bottom: 1px solid var(--bg3);
+  .compat-strip {
+    margin-top: 2.25rem; font-size: 13px; color: var(--ink3);
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
   }
-  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
-  .stat-item { text-align: center; }
-  .stat-num {
-    font-family: var(--serif); font-size: 42px; color: var(--ink);
-    line-height: 1;
-  }
-  .stat-label { font-size: 14px; color: var(--ink3); margin-top: 4px; }
+  .compat-strip b { color: var(--ink2); font-weight: 500; }
 
-  /* HOW */
-  .how { padding: 100px 0; }
+  /* STATS */
+  .stats { padding: 44px 0; border-top: 1px solid rgba(228,226,222,0.7); border-bottom: 1px solid rgba(228,226,222,0.7); }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+  .stat-item { text-align: center; min-width: 0; }
+  .stat-num {
+    font-family: var(--serif); font-size: 42px; line-height: 1.3;
+    background: linear-gradient(135deg, var(--ink), var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .stat-label { font-size: 14px; color: var(--ink3); margin-top: 2px; }
+
+  /* SECTION HEADERS */
+  .how { padding: 110px 0; }
   .section-label {
     font-size: 12px; font-weight: 500; letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
@@ -187,148 +326,316 @@
   }
   .section-sub {
     font-size: 17px; font-weight: 300; color: var(--ink2);
-    max-width: 520px; line-height: 1.65;
+    max-width: 560px; line-height: 1.65;
   }
-  .how-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
-    align-items: start; margin-top: 4rem;
+  .section-link {
+    color: var(--accent); font-size: 14px; font-weight: 500;
+    text-decoration: none; display: inline-flex; align-items: center;
+    gap: 4px; margin-top: 1.25rem;
   }
-  .steps { display: flex; flex-direction: column; gap: 0; }
+  .section-link:hover { text-decoration: underline; }
+
+  .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; margin-top: 4rem; }
+  .steps { display: flex; flex-direction: column; gap: 0.75rem; }
   .step {
-    display: flex; gap: 1.5rem; padding: 1.5rem 0;
-    border-bottom: 1px solid var(--bg3); cursor: pointer;
-    transition: all var(--transition);
+    display: flex; gap: 1.5rem; padding: 1.4rem 1.5rem;
+    border-radius: var(--radius);
+    cursor: default;
+    transition: all 0.3s var(--ease);
   }
-  .step:last-child { border-bottom: none; }
+  .step:hover { background: var(--glass-bg); backdrop-filter: blur(16px); box-shadow: var(--glass-shadow); transform: translateX(4px); }
   .step:hover .step-title { color: var(--accent); }
   .step-num {
-    font-family: var(--serif); font-size: 32px; color: var(--bg3);
-    line-height: 1; min-width: 32px; transition: color var(--transition);
+    font-family: var(--serif); font-size: 32px; line-height: 1; min-width: 32px;
+    background: linear-gradient(135deg, var(--bg3), var(--ink3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    transition: all var(--transition);
   }
-  .step:hover .step-num { color: var(--accent); }
-  .step-title {
-    font-size: 16px; font-weight: 500; margin-bottom: 4px;
-    transition: color var(--transition);
-  }
+  .step:hover .step-num { background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; }
+  .step-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; transition: color var(--transition); }
   .step-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
-  .how-visual {
-    background: var(--white); border-radius: var(--radius);
-    padding: 2rem; border: 1px solid var(--bg3);
-    position: sticky; top: 88px;
-  }
+
+  .how-visual { border-radius: var(--radius); padding: 2rem; position: sticky; top: 100px; }
   .chat-bubble {
-    background: var(--bg); border-radius: 12px;
-    padding: 12px 16px; font-size: 14px; color: var(--ink2);
-    margin-bottom: 10px; max-width: 85%;
-    line-height: 1.5;
+    background: rgba(255,255,255,0.5); backdrop-filter: blur(10px);
+    border-radius: 14px; padding: 12px 16px; font-size: 14px; color: var(--ink2);
+    margin-bottom: 10px; max-width: 85%; line-height: 1.5;
+    border: 1px solid rgba(255,255,255,0.5);
   }
   .chat-bubble.user {
-    background: var(--accent); color: white;
-    margin-left: auto; border-radius: 12px 12px 2px 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white;
+    margin-left: auto; border-radius: 14px 14px 2px 14px; border: none;
+    box-shadow: 0 8px 24px rgba(45,91,227,0.25);
   }
-  .chat-bubble.assistant {
-    background: var(--bg2); border-radius: 12px 12px 12px 2px;
-  }
+  .chat-bubble.assistant { background: rgba(255,255,255,0.6); border-radius: 14px 14px 14px 2px; }
   .chat-label { font-size: 11px; color: var(--ink3); margin-bottom: 4px; }
   .chat-label.right { text-align: right; }
   .chat-divider {
     text-align: center; font-size: 12px; color: var(--ink3);
     margin: 16px 0; display: flex; align-items: center; gap: 8px;
   }
-  .chat-divider::before, .chat-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--bg3);
+  .chat-divider::before, .chat-divider::after { content: ''; flex: 1; height: 1px; background: var(--bg3); }
+
+  /* PRODUCTS */
+  .products { padding: 110px 0; position: relative; overflow: hidden; }
+  .products::before {
+    content: ''; position: absolute; width: 620px; height: 620px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,91,227,0.10), transparent 70%);
+    top: -260px; right: -220px; filter: blur(10px); pointer-events: none; z-index: 0;
+  }
+  .mode-toggle { grid-column: 1 / -1; margin: 0.5rem 0 0.5rem; justify-self: start; }
+
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; position: relative; z-index: 1; }
+  .product-card {
+    border-radius: var(--radius);
+    padding: 1.75rem; display: flex; flex-direction: column; gap: 0.9rem;
+    transition: all 0.35s var(--ease);
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(45,91,227,0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+    border-color: rgba(45,91,227,0.35);
+  }
+  .product-icon {
+    font-size: 22px; width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, rgba(45,91,227,0.14), rgba(124,108,246,0.10));
+  }
+  .product-name { font-size: 17px; font-weight: 500; }
+  .product-desc { font-size: 13.5px; color: var(--ink2); line-height: 1.55; }
+  .product-variant { border-top: 1px solid rgba(228,226,222,0.8); padding-top: 0.9rem; display: flex; flex-direction: column; gap: 4px; }
+  .variant-brand { font-size: 13px; font-weight: 500; color: var(--accent); }
+  .variant-detail { font-size: 13px; color: var(--ink2); line-height: 1.5; }
+  .variant-price { font-size: 13px; color: var(--ink); font-weight: 500; margin-top: 2px; }
+
+  .products-grid[data-mode="budget"] .product-variant.premium { display: none; }
+  .products-grid[data-mode="premium"] .product-variant.budget { display: none; }
+
+  .product-card.hub-card {
+    grid-column: 1 / -1; flex-direction: row; gap: 1.5rem; align-items: flex-start;
+    background: linear-gradient(135deg, rgba(45,91,227,0.10), rgba(124,108,246,0.08));
+  }
+  .hub-card .product-icon { font-size: 24px; width: 52px; height: 52px; }
+  .hub-badge {
+    display: inline-block; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white;
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 0.6rem;
+  }
+  .hub-card .product-name { font-size: 19px; margin-bottom: 2px; }
+  .hub-card .product-desc { font-size: 14.5px; max-width: 720px; }
+
+  .products-note { font-size: 13px; color: var(--ink3); margin-top: 2.5rem; max-width: 640px; line-height: 1.6; position: relative; z-index: 1; }
+
+  /* CLICKABLE PRODUCT CARDS */
+  .product-card[data-modal-key] { cursor: pointer; }
+  .card-hint {
+    font-size: 12.5px; color: var(--accent); font-weight: 500;
+    margin-top: auto; padding-top: 0.4rem;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(26,25,23,0.45);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s var(--ease);
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  body.modal-open { overflow: hidden; }
+  .modal-panel {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+    max-width: 760px; width: 100%; max-height: 92vh;
+    overflow-y: auto; position: relative;
+    padding: 2rem;
+    transform: translateY(16px) scale(0.98); opacity: 0;
+    transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+  }
+  .modal-overlay.open .modal-panel { transform: translateY(0) scale(1); opacity: 1; }
+  .modal-close {
+    position: absolute; top: 1.25rem; right: 1.25rem;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; line-height: 1; color: var(--ink2); cursor: pointer;
+    transition: all var(--transition);
+  }
+  .modal-close:hover { background: var(--accent-light); color: var(--accent); }
+  .modal-header { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.5rem; padding-right: 2.5rem; }
+  .modal-icon {
+    font-size: 22px; width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, rgba(45,91,227,0.14), rgba(124,108,246,0.10));
+  }
+  .modal-title { font-family: var(--serif); font-size: 24px; margin-bottom: 4px; }
+  .modal-sub { font-size: 14px; color: var(--ink2); line-height: 1.55; }
+  .modal-mode-toggle { margin-bottom: 1.5rem; }
+  .modal-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+  .modal-item {
+    border-radius: var(--radius-sm); overflow: hidden;
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.5);
+    display: flex; flex-direction: column;
+  }
+  .modal-item-media {
+    width: 100%; aspect-ratio: 1; background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .modal-item-media img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+  .modal-item-fallback { font-size: 40px; }
+  .modal-item-body { padding: 0.9rem; display: flex; flex-direction: column; gap: 4px; }
+  .modal-item-name { font-size: 13.5px; font-weight: 500; }
+  .modal-item-desc { font-size: 12.5px; color: var(--ink2); line-height: 1.5; }
+  .modal-item-price { font-size: 12.5px; color: var(--accent); font-weight: 500; margin-top: 2px; }
+  .modal-flat-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .modal-flat-item { display: flex; gap: 1rem; padding: 1rem; border-radius: var(--radius-sm); background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.5); }
+  .modal-flat-item-icon { font-size: 22px; flex-shrink: 0; }
+  .modal-flat-item-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .modal-flat-item-desc { font-size: 13px; color: var(--ink2); line-height: 1.55; }
+  .modal-flat-item-example { font-size: 12.5px; color: var(--accent); margin-top: 4px; font-style: italic; }
+  .modal-note { font-size: 12.5px; color: var(--ink3); margin-top: 1.25rem; line-height: 1.6; }
+  @media (max-width: 860px) {
+    .modal-panel { padding: 1.5rem; max-height: 90vh; }
+    .modal-title { font-size: 20px; }
   }
 
   /* PACKAGES */
-  .packages { padding: 100px 0; background: var(--white); }
-  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 4rem; }
+  .packages { padding: 110px 0; position: relative; overflow: hidden; }
+  .packages::before {
+    content: ''; position: absolute; width: 560px; height: 560px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,108,246,0.10), transparent 70%);
+    bottom: -240px; left: -200px; filter: blur(10px); pointer-events: none; z-index: 0;
+  }
+  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 4rem; position: relative; z-index: 1; }
   .package-card {
-    background: var(--bg); border-radius: var(--radius);
-    padding: 2rem; border: 1px solid var(--bg3);
-    display: flex; flex-direction: column; gap: 1.5rem;
-    transition: all var(--transition); position: relative; overflow: hidden;
+    border-radius: var(--radius);
+    padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;
+    transition: all 0.35s var(--ease); position: relative; overflow: hidden;
   }
-  .package-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+  .package-card:hover { transform: translateY(-6px); box-shadow: 0 22px 52px rgba(31,35,45,0.14), inset 0 1px 0 rgba(255,255,255,0.6); }
   .package-card.featured {
-    background: var(--ink); border-color: var(--ink); color: var(--white);
+    background: linear-gradient(160deg, rgba(26,25,23,0.94), rgba(26,25,23,0.98));
+    border-color: rgba(255,255,255,0.1); color: var(--white);
   }
+  @property --angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  .package-card.featured::before {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1.5px;
+    background: conic-gradient(from var(--angle, 0deg), var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: rotateBorder 4s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes rotateBorder { to { --angle: 360deg; } }
   .package-card.featured .pkg-price,
   .package-card.featured .pkg-name { color: var(--white); }
+  .package-card.featured .pkg-price {
+    background: linear-gradient(135deg, #fff, var(--accent-3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .package-card.featured .pkg-desc,
   .package-card.featured .pkg-item { color: rgba(255,255,255,0.6); }
-  .package-card.featured .pkg-item::before { background: rgba(255,255,255,0.3); }
+  .package-card.featured .pkg-item::before { background: var(--accent-3); }
   .featured-badge {
     position: absolute; top: 1.5rem; right: 1.5rem;
-    background: var(--accent); color: white;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white;
     font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
-    text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
+    z-index: 1;
   }
   .pkg-name { font-size: 13px; font-weight: 500; color: var(--ink3); letter-spacing: 0.08em; text-transform: uppercase; }
   .pkg-price { font-family: var(--serif); font-size: 42px; color: var(--ink); line-height: 1; }
   .pkg-price span { font-family: var(--sans); font-size: 16px; font-weight: 300; }
   .pkg-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; }
   .pkg-items { display: flex; flex-direction: column; gap: 10px; list-style: none; }
-  .pkg-item {
-    font-size: 14px; color: var(--ink2);
-    display: flex; gap: 10px; align-items: flex-start;
-  }
+  .pkg-item { font-size: 14px; color: var(--ink2); display: flex; gap: 10px; align-items: flex-start; }
   .pkg-item::before {
     content: ''; width: 6px; height: 6px; border-radius: 50%;
     background: var(--accent); margin-top: 7px; flex-shrink: 0;
   }
   .pkg-cta {
     display: block; text-align: center;
-    padding: 12px; border-radius: 50px;
+    padding: 12px; border-radius: 999px;
     font-size: 14px; font-weight: 500;
     text-decoration: none; cursor: pointer; border: none;
-    transition: all var(--transition); margin-top: auto;
+    transition: all 0.3s var(--ease); margin-top: auto;
+    position: relative; z-index: 1;
   }
-  .pkg-cta-dark { background: var(--ink); color: white; }
-  .pkg-cta-dark:hover { background: var(--accent); }
+  .pkg-cta-dark { background: linear-gradient(135deg, var(--ink), #000); color: white; }
+  .pkg-cta-dark:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 10px 26px rgba(45,91,227,0.3); transform: translateY(-1px); }
   .pkg-cta-light { background: white; color: var(--ink); }
   .pkg-cta-light:hover { background: var(--accent-light); color: var(--accent); }
-  .pkg-cta-outline { background: none; color: var(--ink2); border: 1px solid var(--bg3); }
-  .pkg-cta-outline:hover { border-color: var(--ink3); color: var(--ink); }
+  .pkg-cta-outline { background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--ink2); border: 1px solid var(--glass-border); }
+  .pkg-cta-outline:hover { border-color: var(--accent); color: var(--accent); }
 
   /* AI SECTION */
   .ai-section {
-    padding: 100px 0;
-    background: var(--ink); color: white;
+    padding: 110px 0; background: var(--ink); color: white;
+    position: relative; overflow: hidden;
   }
-  .ai-inner {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  .ai-section::before {
+    content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,91,227,0.30), transparent 70%);
+    top: -180px; left: -140px; filter: blur(20px); pointer-events: none;
   }
-  .ai-section .section-label { color: rgba(255,255,255,0.4); }
+  .ai-section::after {
+    content: ''; position: absolute; width: 460px; height: 460px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(23,184,166,0.22), transparent 70%);
+    bottom: -200px; right: -140px; filter: blur(20px); pointer-events: none;
+  }
+  .ai-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; position: relative; z-index: 1; }
+  .ai-section .section-label { color: rgba(255,255,255,0.45); }
   .ai-section .section-title { color: white; }
   .ai-section .section-sub { color: rgba(255,255,255,0.55); }
   .ai-feature {
-    display: flex; gap: 1rem; padding: 1.25rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; gap: 1rem; padding: 1.1rem; border-radius: var(--radius-sm);
+    transition: all 0.3s var(--ease);
   }
-  .ai-feature:last-child { border-bottom: none; }
+  .ai-feature:hover { background: rgba(255,255,255,0.06); }
   .ai-feature-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: rgba(255,255,255,0.08); display: flex;
-    align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
     font-size: 16px; flex-shrink: 0;
   }
   .ai-feature-title { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
   .ai-feature-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.55; }
   .ai-demo {
-    background: rgba(255,255,255,0.05); border-radius: var(--radius);
-    padding: 1.5rem; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius);
+    padding: 1.5rem; border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   }
-  .ai-demo-title { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ai-demo-title { font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .typing-dots { display: inline-flex; gap: 4px; padding: 4px 0; }
+  .typing-dots span {
+    width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.5);
+    animation: typingBounce 1.2s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }
 
   /* CONTACT */
-  .contact { padding: 100px 0; }
+  .contact { padding: 110px 0; }
   .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
   .contact-info { display: flex; flex-direction: column; gap: 2rem; }
   .contact-detail { display: flex; gap: 1rem; align-items: flex-start; }
   .contact-detail-icon {
     width: 40px; height: 40px; border-radius: var(--radius-sm);
-    background: var(--bg2); display: flex; align-items: center;
-    justify-content: center; font-size: 18px; flex-shrink: 0;
+    background: var(--glass-bg); backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
   }
   .contact-detail-label { font-size: 12px; color: var(--ink3); margin-bottom: 2px; }
   .contact-detail-val { font-size: 15px; font-weight: 400; }
@@ -337,37 +644,46 @@
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-label { font-size: 13px; font-weight: 500; color: var(--ink2); }
   .form-input, .form-select, .form-textarea {
-    background: var(--white); border: 1px solid var(--bg3);
+    background: var(--glass-bg); backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm); padding: 12px 14px;
     font-family: var(--sans); font-size: 15px; color: var(--ink);
-    outline: none; transition: border-color var(--transition);
+    outline: none; transition: all var(--transition);
     width: 100%;
   }
-  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent); background: var(--glass-bg-strong);
+    box-shadow: 0 0 0 4px rgba(45,91,227,0.12);
+  }
   .form-textarea { resize: vertical; min-height: 120px; }
   .form-submit {
-    background: var(--ink); color: white;
-    border: none; border-radius: 50px;
+    background: linear-gradient(135deg, var(--ink), #000); color: white;
+    border: none; border-radius: 999px;
     padding: 14px 32px; font-family: var(--sans);
     font-size: 15px; font-weight: 500;
-    cursor: pointer; transition: all var(--transition);
+    cursor: pointer; transition: all 0.3s var(--ease);
     align-self: flex-start;
+    box-shadow: 0 6px 20px rgba(26,25,23,0.18);
   }
-  .form-submit:hover { background: var(--accent); transform: translateY(-1px); }
+  .form-submit:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(45,91,227,0.32); }
   .form-note { font-size: 12px; color: var(--ink3); margin-top: 4px; }
 
   /* FOOTER */
-  footer {
-    padding: 2rem 0; border-top: 1px solid var(--bg3);
-    display: flex; align-items: center;
+  footer { padding: 2rem 0 2.5rem; display: flex; align-items: center; position: relative; }
+  footer::before {
+    content: ''; position: absolute; top: 0; left: 2rem; right: 2rem; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--bg3) 20%, var(--bg3) 80%, transparent);
   }
   .footer-inner {
     max-width: var(--max); margin: 0 auto; padding: 0 2rem;
     display: flex; justify-content: space-between; align-items: center;
-    width: 100%;
+    width: 100%; flex-wrap: wrap; gap: 0.5rem;
   }
   .footer-logo { font-family: var(--serif); font-size: 18px; }
-  .footer-logo span { color: var(--accent); }
+  .footer-logo span {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .footer-copy { font-size: 13px; color: var(--ink3); }
 
   /* LANG TOGGLE LOGIC */
@@ -380,30 +696,78 @@
 
   /* RESPONSIVE */
   @media (max-width: 860px) {
+    .hero { padding-top: 130px; }
     .hero-grid, .how-grid, .ai-inner, .contact-grid { grid-template-columns: 1fr; }
     .hero-visual { display: none; }
     .packages-grid { grid-template-columns: 1fr; }
-    .stats-grid { grid-template-columns: repeat(3,1fr); }
+    .stats-grid { grid-template-columns: repeat(3,1fr); gap: 1rem; }
     .form-row { grid-template-columns: 1fr; }
     .how-visual { display: none; }
-    .nav-right a { display: none; }
+    .nav-right a:not(.seg-toggle) { display: none; }
+    .product-card.hub-card { flex-direction: column; }
   }
 
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; gap: 1.75rem; }
+    .stat-num { font-size: 34px; }
   }
+
+  /* PROMO VIDEO */
+  .video-section { padding: 40px 0 110px; }
+  .video-head { text-align: center; max-width: 620px; margin: 0 auto 2.5rem; }
+  .video-head .section-sub { margin: 0 auto; }
+  .video-frame {
+    position: relative; max-width: 960px; margin: 0 auto;
+    border-radius: 24px; padding: 10px; overflow: hidden;
+  }
+  .video-frame video {
+    display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px;
+    background: var(--bg2); object-fit: cover;
+  }
+  .video-play {
+    position: absolute; inset: 10px; border-radius: 16px; border: none; cursor: pointer;
+    background: rgba(26,25,23,0.10); display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s var(--ease), opacity 0.3s var(--ease);
+  }
+  .video-play:hover { background: rgba(26,25,23,0.20); }
+  .video-play-icon {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 12px 40px rgba(31,35,45,0.25);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s var(--ease);
+  }
+  .video-play:hover .video-play-icon { transform: scale(1.08); }
+  .video-play-icon::before {
+    content: ''; margin-left: 5px;
+    border-style: solid; border-width: 12px 0 12px 20px;
+    border-color: transparent transparent transparent var(--accent);
+  }
+  .video-frame.playing .video-play { opacity: 0; pointer-events: none; }
+  @media (max-width: 860px) {
+    .video-section { padding: 20px 0 80px; }
+    .video-frame { border-radius: 18px; padding: 6px; }
+    .video-play { inset: 6px; }
+    .video-play-icon { width: 64px; height: 64px; }
+  }
+
+  /* ENTRANCE ANIMATIONS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
   .hero-eyebrow { animation: fadeUp 0.6s ease both; }
   .hero h1 { animation: fadeUp 0.6s 0.1s ease both; }
   .hero-sub { animation: fadeUp 0.6s 0.2s ease both; }
   .hero-btns { animation: fadeUp 0.6s 0.3s ease both; }
+  .compat-strip { animation: fadeUp 0.6s 0.4s ease both; }
 </style>
 </head>
 <body>
 
+<div class="scroll-progress" id="scroll-progress"></div>
+
 <!-- NAV -->
-<nav>
+<nav id="nav">
   <div class="nav-inner">
     <a href="#" class="logo">Slim<span>-Home</span></a>
     <div class="nav-right">
@@ -411,35 +775,42 @@
         <span data-lang="nl">Hoe het werkt</span>
         <span data-lang="en">How it works</span>
       </a>
+      <a href="#products">
+        <span data-lang="nl">Producten</span>
+        <span data-lang="en">Products</span>
+      </a>
       <a href="#packages">
         <span data-lang="nl">Pakketten</span>
         <span data-lang="en">Packages</span>
       </a>
       <a href="#contact">Contact</a>
-      <div class="lang-toggle">
-        <button class="lang-btn active" id="btn-nl" onclick="setLang('nl')">NL</button>
-        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      <div class="lang-toggle seg-toggle" id="lang-toggle">
+        <span class="seg-thumb"></span>
+        <button class="lang-btn seg-btn active" id="btn-nl" onclick="setLang('nl')">NL</button>
+        <button class="lang-btn seg-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
     </div>
   </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero" id="hero-section">
+  <div class="spotlight" id="spotlight"></div>
   <div class="container">
     <div class="hero-grid">
       <div>
-        <p class="hero-eyebrow">
+        <p class="hero-eyebrow glass">
+          <span class="pulse-dot"></span>
           <span data-lang="nl">Smart home specialist · Noord-Holland</span>
           <span data-lang="en">Smart home expert · Noord-Holland</span>
         </p>
         <h1>
-          <span data-lang="nl">Jouw huis,<br><em>intelligenter</em><br>gemaakt.</span>
+          <span data-lang="nl">Jouw huis<br><em>slimmer</em><br>gemaakt</span>
           <span data-lang="en">Your home,<br><em>made smarter.</em></span>
         </h1>
         <p class="hero-sub">
-          <span data-lang="nl">Slim-Home installeert een slim huis dat echt werkt — zonder verborgen kosten, zonder gedoe. Gewoon prettig wonen.</span>
-          <span data-lang="en">Slim-Home installs a smart home that actually works — no hidden costs, no fuss. Just a better place to live.</span>
+          <span data-lang="nl">Slim-Home installeert een slim huis dat echt werkt — zonder verborgen kosten, zonder gedoe. Van betaalbare IKEA-apparatuur tot premium merken: jij kiest, ik zorg dat het samenwerkt.</span>
+          <span data-lang="en">Slim-Home installs a smart home that actually works — no hidden costs, no fuss. From affordable IKEA gear to premium brands: you choose, I make it all work together.</span>
         </p>
         <div class="hero-btns">
           <a href="#contact" class="btn-primary">
@@ -451,6 +822,11 @@
             <span data-lang="nl">Bekijk pakketten</span>
             <span data-lang="en">View packages</span>
           </a>
+        </div>
+        <div class="compat-strip">
+          <span data-lang="nl">Werkt met:</span>
+          <span data-lang="en">Works with:</span>
+          <b>IKEA</b> · Aqara · Philips Hue · WiiM · Nuki · Tado° · Shelly <span data-lang="nl">en meer</span><span data-lang="en">and more</span>
         </div>
       </div>
       <div class="hero-visual">
@@ -473,21 +849,45 @@
 <section class="stats">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat-item">
+      <div class="stat-item reveal">
         <div class="stat-num">1 dag</div>
         <div class="stat-label" data-lang="nl">Gemiddelde installatietijd</div>
-        <div class="stat-label" data-lang="en">Average install time</div>
+        <div class="stat-label" data-lang="en">Average installation time</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">€25</div>
-        <div class="stat-label" data-lang="nl">Optioneel support-abonnement per maand</div>
-        <div class="stat-label" data-lang="en">Optional support plan per month</div>
+      <div class="stat-item reveal" style="--i:1">
+        <div class="stat-num">Support</div>
+        <div class="stat-label" data-lang="nl">Hulp op afstand</div>
+        <div class="stat-label" data-lang="en">Remote help</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">NL</div>
-        <div class="stat-label" data-lang="nl">Praat in het Nederlands met je huis</div>
-        <div class="stat-label" data-lang="en">Talk to your home in any language</div>
+      <div class="stat-item reveal" style="--i:2">
+        <div class="stat-num"><span data-lang="nl">AI Assistent</span><span data-lang="en">AI Assistant</span></div>
+        <div class="stat-label" data-lang="nl">Praat met je huis</div>
+        <div class="stat-label" data-lang="en">Talk to your home</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROMO VIDEO -->
+<section class="video-section" id="video">
+  <div class="container">
+    <div class="video-head">
+      <p class="section-label reveal">
+        <span data-lang="nl">Zie het in 20 seconden</span>
+        <span data-lang="en">See it in 20 seconds</span>
+      </p>
+      <h2 class="section-title reveal" style="--i:1">
+        <span data-lang="nl">Zo voelt een slim huis.</span>
+        <span data-lang="en">This is what a smart home feels like.</span>
+      </h2>
+    </div>
+    <div class="video-frame glass reveal" style="--i:2" id="video-frame">
+      <video id="promo-video" preload="none" playsinline poster="assets/promo-poster.jpg" aria-label="Slim-Home promotiefilm">
+        <source src="assets/promo.mp4" type="video/mp4">
+      </video>
+      <button class="video-play" id="video-play" type="button" aria-label="Video afspelen / Play video">
+        <span class="video-play-icon"></span>
+      </button>
     </div>
   </div>
 </section>
@@ -495,21 +895,21 @@
 <!-- HOW IT WORKS -->
 <section class="how" id="how">
   <div class="container">
-    <p class="section-label">
+    <p class="section-label reveal">
       <span data-lang="nl">Hoe het werkt</span>
       <span data-lang="en">How it works</span>
     </p>
-    <h2 class="section-title">
+    <h2 class="section-title reveal" style="--i:1">
       <span data-lang="nl">Eenvoudig.<br>Van intake tot eindresultaat.</span>
       <span data-lang="en">Simple.<br>From intake to end result.</span>
     </h2>
-    <p class="section-sub">
+    <p class="section-sub reveal" style="--i:2">
       <span data-lang="nl">Geen technische kennis nodig. Ik regel alles — jij geniet van het resultaat.</span>
       <span data-lang="en">No technical knowledge needed. I handle everything — you enjoy the result.</span>
     </p>
     <div class="how-grid">
       <div class="steps">
-        <div class="step">
+        <div class="step reveal">
           <div class="step-num">01</div>
           <div>
             <div class="step-title" data-lang="nl">Intake gesprek</div>
@@ -518,16 +918,16 @@
             <div class="step-desc" data-lang="en">We discuss your home, wishes and budget. Online or at your place, free and no obligation.</div>
           </div>
         </div>
-        <div class="step">
+        <div class="step reveal" style="--i:1">
           <div class="step-num">02</div>
           <div>
             <div class="step-title" data-lang="nl">Voorstel op maat</div>
             <div class="step-title" data-lang="en">Tailored proposal</div>
-            <div class="step-desc" data-lang="nl">Je krijgt een heldere offerte met precies wat je nodig hebt — niet meer, niet minder.</div>
-            <div class="step-desc" data-lang="en">You receive a clear quote with exactly what you need — nothing more, nothing less.</div>
+            <div class="step-desc" data-lang="nl">Je krijgt een heldere offerte met precies wat je nodig hebt — inclusief welke apparaten (budget of premium) het beste passen.</div>
+            <div class="step-desc" data-lang="en">You receive a clear quote with exactly what you need — including which devices (budget or premium) fit best.</div>
           </div>
         </div>
-        <div class="step">
+        <div class="step reveal" style="--i:2">
           <div class="step-num">03</div>
           <div>
             <div class="step-title" data-lang="nl">Installatie</div>
@@ -536,7 +936,7 @@
             <div class="step-desc" data-lang="en">I install everything on a day that suits you. Including explanation and personal settings.</div>
           </div>
         </div>
-        <div class="step">
+        <div class="step reveal" style="--i:3">
           <div class="step-num">04</div>
           <div>
             <div class="step-title" data-lang="nl">Klaar — en daarna</div>
@@ -546,7 +946,7 @@
           </div>
         </div>
       </div>
-      <div class="how-visual">
+      <div class="how-visual glass reveal" style="--i:2">
         <div class="chat-label">
           <span data-lang="nl">Klant — via AI</span>
           <span data-lang="en">Client — via AI</span>
@@ -572,24 +972,399 @@
   </div>
 </section>
 
+<!-- PRODUCTS -->
+<section class="products" id="products">
+  <div class="container">
+    <p class="section-label reveal">
+      <span data-lang="nl">Producten</span>
+      <span data-lang="en">Products</span>
+    </p>
+    <h2 class="section-title reveal" style="--i:1">
+      <span data-lang="nl">Van budget tot premium.<br>Jij kiest de apparatuur.</span>
+      <span data-lang="en">From budget to premium.<br>You choose the hardware.</span>
+    </h2>
+    <p class="section-sub reveal" style="--i:2">
+      <span data-lang="nl">Ik werk het liefst met IKEA's Home smart-systeem als basis — betaalbaar, lokaal en makkelijk uit te breiden. Liever premium merken, of een mix? Dat kan voor elk onderdeel hieronder.</span>
+      <span data-lang="en">I mostly build on IKEA's Home smart system — affordable, local, and easy to expand. Prefer premium brands, or a mix? That works for every category below.</span>
+    </p>
+
+    <div class="products-grid" id="products-grid" data-mode="budget">
+
+      <!-- HUB -->
+      <div class="product-card hub-card glass reveal">
+        <div class="product-icon">🧠</div>
+        <div>
+          <div class="hub-badge">
+            <span data-lang="nl">Inbegrepen bij elk pakket</span>
+            <span data-lang="en">Included in every package</span>
+          </div>
+          <div class="product-name">
+            <span data-lang="nl">Het brein: Home Assistant + Zigbee</span>
+            <span data-lang="en">The brain: Home Assistant + Zigbee</span>
+          </div>
+          <div class="product-desc">
+            <span data-lang="nl">Home Assistant draait lokaal in huis en is het brein achter alles — gratis, open-source en 100% van jou. Voor de meeste apparaten (lampen, stekkers) gebruik je een Zigbee-dongle (bijv. de Home Assistant SkyConnect of een Sonoff Zigbee 3.0 dongle), die rechtstreeks met Home Assistant verbindt — geen aparte merk-hub nodig.</span>
+            <span data-lang="en">Home Assistant runs locally in your home and is the brain behind everything — free, open-source and fully yours. For most devices (lights, plugs) you use a Zigbee dongle (e.g. the Home Assistant SkyConnect or a Sonoff Zigbee 3.0 dongle), which connects straight to Home Assistant — no separate brand hub needed.</span>
+          </div>
+          <div class="product-desc" style="margin-top: 0.5rem;">
+            <span data-lang="nl">Sommige nieuwere sensoren — zoals IKEA's laatste generatie beweging-, deur/raam- en luchtkwaliteitsensoren — werken niet via Zigbee maar via <strong>Matter over Thread</strong>. Daarvoor is een Thread-grensrouter nodig: dat kan een losse Matter/Thread-USB-dongle zijn, of gewoon een Apple TV 4K, HomePod (mini), Google Nest-speaker/Hub of recente Amazon Echo die je al in huis hebt. Home Assistant ondersteunt Zigbee én Matter/Thread naast elkaar.</span>
+            <span data-lang="en">Some newer sensors — like IKEA's latest generation of motion, door/window and air-quality sensors — don't use Zigbee but <strong>Matter over Thread</strong> instead. That needs a Thread border router: either a separate Matter/Thread USB dongle, or simply an Apple TV 4K, HomePod (mini), Google Nest speaker/Hub or recent Amazon Echo you already have at home. Home Assistant supports Zigbee and Matter/Thread side by side.</span>
+          </div>
+          <div class="product-desc" style="margin-top: 0.5rem;">
+            <span data-lang="nl">Klinkt dit allemaal als abracadabra? Geen zorgen — je hoeft niet te kiezen, ik zorg dat alles gewoon samenwerkt en leg het je in begrijpelijke taal uit tijdens het intakegesprek.</span>
+            <span data-lang="en">Does all this sound like gibberish? No worries — you don't have to choose, I make sure it all works together and I'll explain it in plain language during the intake call.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-toggle seg-toggle reveal" role="tablist" id="mode-toggle">
+        <span class="seg-thumb"></span>
+        <button class="mode-btn seg-btn active" data-mode="budget" type="button">
+          <span data-lang="nl">Budget</span>
+          <span data-lang="en">Budget</span>
+        </button>
+        <button class="mode-btn seg-btn" data-mode="premium" type="button">Premium</button>
+      </div>
+
+      <!-- LIGHTING -->
+      <div class="product-card glass reveal" data-modal-key="lighting">
+        <div class="product-icon">💡</div>
+        <div class="product-name"><span data-lang="nl">Verlichting</span><span data-lang="en">Lighting</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Dimmen, warm-wit tot vol kleur, tijdschema's en scènes voor elke ruimte.</span>
+          <span data-lang="en">Dimming, warm-white to full colour, schedules and scenes for every room.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">IKEA KAJPLATS</div>
+          <div class="variant-detail">
+            <span data-lang="nl">LED-lampen en spots, dimbaar, deels met kleur. Sluit direct aan via de Zigbee-dongle in huis (opvolger van TRÅDFRI).</span>
+            <span data-lang="en">LED bulbs and spots, dimmable, some with colour. Connects straight to the Zigbee dongle in your home (successor to TRÅDFRI).</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €7,99 per lamp</span><span data-lang="en">from €7.99 per bulb</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Philips Hue White &amp; Color</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Rijkere kleuren, razendsnelle sync met beeld en muziek, het grootste accessoire-aanbod.</span>
+            <span data-lang="en">Richer colour range, near-instant sync with screen and music, the widest accessory lineup.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €55 per lamp</span><span data-lang="en">from €55 per bulb</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- MOTION -->
+      <div class="product-card glass reveal" data-modal-key="motion">
+        <div class="product-icon">🚶</div>
+        <div class="product-name"><span data-lang="nl">Beweging &amp; aanwezigheid</span><span data-lang="en">Motion &amp; presence</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Licht dat vanzelf aangaat, alarmen die weten of er iemand thuis is.</span>
+          <span data-lang="en">Lights that switch on by themselves, alarms that know whether someone's home.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">IKEA MYGGSPRAY</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Draadloze bewegingssensor, eenvoudig te plakken of schroeven, jarenlange batterijduur (opvolger van VALLHORN). Werkt via Matter/Thread, geen Zigbee — zie de uitleg bij "Het brein" hierboven.</span>
+            <span data-lang="en">Wireless motion sensor, stick or screw it up, battery lasts years (successor to VALLHORN). Uses Matter/Thread, not Zigbee — see "The brain" above for what that needs.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €8,99</span><span data-lang="en">from €8.99</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Aqara FP2 (mmWave)</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Detecteert aanwezigheid in plaats van enkel beweging — geen valse "geen beweging"-meldingen meer, meerdere zones per sensor.</span>
+            <span data-lang="en">Detects presence rather than just movement — no more false "no motion" triggers, multiple zones per sensor.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €69</span><span data-lang="en">from €69</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- DOOR/WINDOW -->
+      <div class="product-card glass reveal" data-modal-key="doorwindow">
+        <div class="product-icon">🚪</div>
+        <div class="product-name"><span data-lang="nl">Deur- &amp; raamsensoren</span><span data-lang="en">Door &amp; window sensors</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Weet altijd of iets open, dicht of geforceerd is.</span>
+          <span data-lang="en">Always know if something's open, closed, or forced.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">IKEA MYGGBETT</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Compacte deur-/raamsensor, direct te koppelen aan automatiseringen zoals "licht uit bij open raam" (opvolger van PARASOLL). Werkt via Matter/Thread, geen Zigbee.</span>
+            <span data-lang="en">Compact door/window sensor, hooks straight into automations like "lights off when window opens" (successor to PARASOLL). Uses Matter/Thread, not Zigbee.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €5,99</span><span data-lang="en">from €5.99</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Aqara P2 + camera's (Reolink)</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Kleiner, met vibratiedetectie, te combineren met camera's voor visuele bevestiging bij een melding.</span>
+            <span data-lang="en">Smaller, adds vibration detection, pairs with cameras for visual confirmation on an alert.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">sensor vanaf €27, camera vanaf €76</span><span data-lang="en">sensor from €27, camera from €76</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- CLIMATE -->
+      <div class="product-card glass reveal" data-modal-key="climate">
+        <div class="product-icon">🌡️</div>
+        <div class="product-name"><span data-lang="nl">Klimaat &amp; verwarming</span><span data-lang="en">Climate &amp; heating</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Elke ruimte op de juiste temperatuur, automatisch en op afstand.</span>
+          <span data-lang="en">Every room at the right temperature, automatically and remotely.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">Moes Zigbee 3.0 Radiatorknop</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Vervangt de handmatige knop, per ruimte te programmeren, gewoon via je Zigbee-dongle — IKEA heeft hier zelf (nog) geen product voor.</span>
+            <span data-lang="en">Replaces the manual valve, programmable per room, works via your Zigbee dongle — IKEA doesn't (yet) make one of these itself.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €39,95 per radiator</span><span data-lang="en">from €39.95 per radiator</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Tado° Slimme Radiatorknop X</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Weersafhankelijke regeling, geofencing (verwarming lager als iedereen weg is), leert je ritme.</span>
+            <span data-lang="en">Weather-adaptive control, geofencing (heating down when everyone's out), learns your routine.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €100</span><span data-lang="en">from €100</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- CURTAINS -->
+      <div class="product-card glass reveal" data-modal-key="curtains">
+        <div class="product-icon">🪟</div>
+        <div class="product-name"><span data-lang="nl">Gordijnen &amp; zonwering</span><span data-lang="en">Curtains &amp; blinds</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Rolgordijnen die opengaan met de zon, dichtgaan bij fel licht, of op tijdschema.</span>
+          <span data-lang="en">Roller blinds that open with the sun, close in bright light, or follow a schedule.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">Aqara Curtain Driver E1</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Motoriseert je bestaande gordijnrail via Zigbee, geen boren nodig. IKEA is gestopt met slimme rolgordijnen (FYRTUR/KADRILJ), dit is de betaalbaarste betrouwbare vervanging.</span>
+            <span data-lang="en">Motorises your existing curtain rail via Zigbee, no drilling needed. IKEA discontinued its smart roller blinds (FYRTUR/KADRILJ) — this is the most affordable reliable replacement.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €85</span><span data-lang="en">from €85</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Somfy Oximo io (io-homecontrol)</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Professionele buismotor voor rolluiken en zonwering — ook bij grote of zware ramen.</span>
+            <span data-lang="en">Professional-grade tube motor for shutters and blinds — even large or heavy windows.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €200</span><span data-lang="en">from €200</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- PLUGS -->
+      <div class="product-card glass reveal" data-modal-key="plugs">
+        <div class="product-icon">🔌</div>
+        <div class="product-name"><span data-lang="nl">Stopcontacten &amp; schakelaars</span><span data-lang="en">Plugs &amp; switches</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Maak elk "dom" apparaat slim, of automatiseer je bestaande lichtschakelaars.</span>
+          <span data-lang="en">Make any "dumb" appliance smart, or automate your existing light switches.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">IKEA TRETAKT &amp; BILRESA</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Slimme stekker (via Zigbee) tussen stopcontact en apparaat, of een extra draadloze schakelaar waar je maar wilt (BILRESA is de opvolger van SOMRIG).</span>
+            <span data-lang="en">Smart plug (via Zigbee) between socket and appliance, or an extra wireless switch wherever you like (BILRESA is the successor to SOMRIG).</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €6,99</span><span data-lang="en">from €6.99</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Shelly / Aqara inbouwmodules</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Verdwijnen achter je bestaande schakelaar — die blijft gewoon werken, plus app- en spraakbediening erbij.</span>
+            <span data-lang="en">Hide behind your existing switch — which keeps working as normal, with app and voice control added.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €24</span><span data-lang="en">from €24</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- AIR/ENERGY -->
+      <div class="product-card glass reveal" data-modal-key="air">
+        <div class="product-icon">🌬️</div>
+        <div class="product-name"><span data-lang="nl">Luchtkwaliteit &amp; energie</span><span data-lang="en">Air quality &amp; energy</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Zicht op CO₂, vocht en stroomverbruik — en automatisch bijsturen.</span>
+          <span data-lang="en">Insight into CO₂, humidity and power use — with automatic adjustments.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">IKEA ALPSTUGA</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Meet fijnstof, CO₂ en luchtvochtigheid, met scherm (opvolger van VINDSTYRKA). Werkt via Matter/Thread, geen Zigbee.</span>
+            <span data-lang="en">Measures particulates, CO₂ and humidity, with a display (successor to VINDSTYRKA). Uses Matter/Thread, not Zigbee.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €29,99</span><span data-lang="en">from €29.99</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">HomeWizard P1-meter + Netatmo</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Live energieverbruik van je hele huis, uitgebreide weerstation-metingen, gedetailleerde trends in je dashboard.</span>
+            <span data-lang="en">Live energy use for your whole home, extensive weather station readings, detailed trends on your dashboard.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €33</span><span data-lang="en">from €33</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- HUMIDITY -->
+      <div class="product-card glass reveal" data-modal-key="humidity">
+        <div class="product-icon">💧</div>
+        <div class="product-name"><span data-lang="nl">Vochtmeters</span><span data-lang="en">Humidity sensors</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Voorkom vocht en schimmel — weet precies hoe vochtig het is in de badkamer, kelder of kruipruimte.</span>
+          <span data-lang="en">Prevent damp and mould — know exactly how humid your bathroom, basement or crawl space is.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">Aqara Temperatuur- &amp; Vochtsensor</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Compacte batterijsensor voor elke ruimte apart, met melding bij schimmelrisico via Home Assistant. Gewoon via Zigbee.</span>
+            <span data-lang="en">Compact battery sensor for any individual room, with a mould-risk alert via Home Assistant. Plain Zigbee.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €18,70 per sensor</span><span data-lang="en">from €18.70 per sensor</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">IKEA ALPSTUGA</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Meet naast luchtvochtigheid ook luchtkwaliteit, met scherm (opvolger van VINDSTYRKA). Werkt via Matter/Thread, geen Zigbee.</span>
+            <span data-lang="en">Measures air quality alongside humidity, with a display (successor to VINDSTYRKA). Uses Matter/Thread, not Zigbee.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €29,99</span><span data-lang="en">from €29.99</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- LOCKS -->
+      <div class="product-card glass reveal" data-modal-key="locks">
+        <div class="product-icon">🔒</div>
+        <div class="product-name"><span data-lang="nl">Deursloten</span><span data-lang="en">Smart locks</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Naar binnen zonder sleutel, op afstand meekijken wie er is geweest.</span>
+          <span data-lang="en">Get in without a key, check remotely who's been by.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">Nuki Smart Lock Go</div>
+          <div class="variant-detail">
+            <span data-lang="nl">IKEA heeft geen eigen slim slot — dit is het officiële "Works with Home Assistant"-instapmodel van Nuki, koppelt met je bestaande cilinder, geen boren nodig.</span>
+            <span data-lang="en">IKEA doesn't make a smart lock — this is Nuki's official "Works with Home Assistant" entry model, fits your existing cylinder, no drilling needed.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €144</span><span data-lang="en">from €144</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">Nuki Smart Lock Pro / Yale Linus</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Autolock, tijdelijke digitale sleutels voor gasten, ingebouwde wifi.</span>
+            <span data-lang="en">Auto-lock, temporary digital keys for guests, built-in wifi.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €149</span><span data-lang="en">from €149</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- AUDIO -->
+      <div class="product-card glass reveal" data-modal-key="audio">
+        <div class="product-icon">🔊</div>
+        <div class="product-name"><span data-lang="nl">Audio &amp; entertainment</span><span data-lang="en">Audio &amp; entertainment</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Muziek die met je meeloopt door het huis, aangestuurd door dezelfde automatiseringen. Veel moderne installaties zijn al te besturen via Home Assistant — tijdens de intake bekijken we dat samen.</span>
+          <span data-lang="en">Music that follows you through the house, run by the same automations. Many modern setups can already be controlled via Home Assistant — we'll take a good look at yours during the intake.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand">WiiM Mini</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Klein streamertje dat je eigen speaker of versterker slim en multiroom-geschikt maakt, zonder iets te vervangen.</span>
+            <span data-lang="en">Small streamer that makes your own speaker or amplifier smart and multiroom-ready, without replacing anything.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €99</span><span data-lang="en">from €99</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand">WiiM Amp</div>
+          <div class="variant-detail">
+            <span data-lang="nl">Streaming-versterker die elke passieve speaker (ook bestaande) omtovert tot een volwaardig multiroom-systeem.</span>
+            <span data-lang="en">Streaming amplifier that turns any passive speaker (existing ones too) into a full multiroom system.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf €369</span><span data-lang="en">from €369</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- AUTOMATIONS -->
+      <div class="product-card glass reveal" data-modal-key="automations">
+        <div class="product-icon">⚙️</div>
+        <div class="product-name"><span data-lang="nl">Automatiseringen</span><span data-lang="en">Automations</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">De koppeling tussen al je apparaten — dit is waar het slimme huis echt tot leven komt.</span>
+          <span data-lang="en">The link between all your devices — this is where the smart home really comes alive.</span>
+        </div>
+        <div class="product-variant budget">
+          <div class="variant-brand"><span data-lang="nl">Basisautomatiseringen</span><span data-lang="en">Basic automations</span></div>
+          <div class="variant-detail">
+            <span data-lang="nl">Bijv. licht op beweging, verwarming op schema, gordijnen bij zonsopgang. Ingesteld en getest tijdens installatie.</span>
+            <span data-lang="en">E.g. lights on motion, heating on schedule, curtains at sunrise. Set up and tested during installation.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">inbegrepen vanaf Starter</span><span data-lang="en">included from Starter</span></div>
+        </div>
+        <div class="product-variant premium">
+          <div class="variant-brand"><span data-lang="nl">Maatwerk &amp; AI-automatiseringen</span><span data-lang="en">Custom &amp; AI automations</span></div>
+          <div class="variant-detail">
+            <span data-lang="nl">Complexe scenario's met meerdere triggers, aanwezigheidsdetectie en de AI-assistent die in gewone taal nieuwe automatiseringen aanmaakt.</span>
+            <span data-lang="en">Complex scenarios with multiple triggers, presence detection, and the AI assistant creating new automations from plain language.</span>
+          </div>
+          <div class="variant-price"><span data-lang="nl">vanaf Comfort</span><span data-lang="en">from Comfort</span></div>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+      <!-- VOICE CONTROL -->
+      <div class="product-card glass reveal" data-modal-key="voice">
+        <div class="product-icon">🗣️</div>
+        <div class="product-name"><span data-lang="nl">Stembediening</span><span data-lang="en">Voice control</span></div>
+        <div class="product-desc">
+          <span data-lang="nl">Praat gewoon tegen je huis — via een Apple TV/HomePod, Google-speaker of Amazon Echo die je misschien al hebt.</span>
+          <span data-lang="en">Just talk to your home — via an Apple TV/HomePod, Google speaker or Amazon Echo you might already own.</span>
+        </div>
+        <span class="card-hint"><span data-lang="nl">Bekijk voorbeelden →</span><span data-lang="en">See examples →</span></span>
+      </div>
+
+    </div>
+
+    <p class="products-note">
+      <span data-lang="nl">Richtprijzen per apparaat, excl. installatie — installatie en configuratie zitten in de pakketten hieronder. Voorkeur voor een ander merk dan hierboven? Prima, dat bespreken we gewoon tijdens de intake.</span>
+      <span data-lang="en">Indicative prices per device, excl. installation — installation and setup are covered in the packages below. Prefer a different brand than shown here? No problem, we'll discuss it during the intake.</span>
+    </p>
+  </div>
+</section>
+
 <!-- PACKAGES -->
 <section class="packages" id="packages">
   <div class="container">
-    <p class="section-label">
+    <p class="section-label reveal">
       <span data-lang="nl">Pakketten</span>
       <span data-lang="en">Packages</span>
     </p>
-    <h2 class="section-title">
+    <h2 class="section-title reveal" style="--i:1">
       <span data-lang="nl">Eerlijk geprijsd.<br>Geen verrassingen.</span>
       <span data-lang="en">Fairly priced.<br>No surprises.</span>
     </h2>
-    <p class="section-sub">
-      <span data-lang="nl">Alle hardware inbegrepen in de prijs. Geen verborgen kosten, geen maandelijkse abonnementen.</span>
-      <span data-lang="en">All hardware included in the price. No hidden costs, no monthly subscriptions.</span>
+    <p class="section-sub reveal" style="--i:2">
+      <span data-lang="nl">Deze prijs is voor installatie, configuratie en het aansluiten van je apparaten — niet voor de apparaten zelf. Hardware koop je apart, zelf of via mij, in overleg samengesteld tijdens de intake. Geen verborgen kosten, geen verplichte maandelijkse abonnementen.</span>
+      <span data-lang="en">This price covers installation, configuration and connecting your devices — not the devices themselves. You buy the hardware separately, either yourself or through me, put together during the intake. No hidden costs, no mandatory monthly subscriptions.</span>
     </p>
+    <a href="#products" class="section-link reveal" style="--i:3">
+      <span data-lang="nl">↑ Bekijk voorbeelden van apparatuur</span>
+      <span data-lang="en">↑ See example equipment</span>
+    </a>
     <div class="packages-grid">
       <!-- Starter -->
-      <div class="package-card">
+      <div class="package-card glass reveal">
         <div>
           <div class="pkg-name">Starter</div>
           <div class="pkg-price">€399 <span data-lang="nl">eenmalig</span><span data-lang="en">one-time</span></div>
@@ -599,9 +1374,11 @@
           <span data-lang="en">The perfect first step. Your home gets smart — without the hassle.</span>
         </p>
         <ul class="pkg-items">
-          <li class="pkg-item"><span data-lang="nl">Slimme lampen en apparaten van hoge kwaliteit</span><span data-lang="en">High-quality smart lights and devices</span></li>
-          <li class="pkg-item"><span data-lang="nl">Home Assistant installatie & configuratie</span><span data-lang="en">Home Assistant install & configuration</span></li>
-          <li class="pkg-item"><span data-lang="nl">3 persoonlijke automatiseringen</span><span data-lang="en">3 personal automations</span></li>
+          <li class="pkg-item"><span data-lang="nl">Home Assistant installatie &amp; configuratie</span><span data-lang="en">Home Assistant install &amp; configuration</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 8 lampen aansluiten</span><span data-lang="en">Up to 8 lights connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 4 motion sensoren aansluiten</span><span data-lang="en">Up to 4 motion sensors connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 3 slimme stekkers aansluiten</span><span data-lang="en">Up to 3 smart plugs connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 5 automatiseringen op maat</span><span data-lang="en">Up to 5 custom automations</span></li>
           <li class="pkg-item"><span data-lang="nl">1 uur persoonlijke uitleg</span><span data-lang="en">1 hour personal walkthrough</span></li>
         </ul>
         <a href="#contact" class="pkg-cta pkg-cta-outline">
@@ -610,7 +1387,7 @@
         </a>
       </div>
       <!-- Comfort (featured) -->
-      <div class="package-card featured">
+      <div class="package-card featured reveal" style="--i:1">
         <div class="featured-badge">
           <span data-lang="nl">Meest gekozen</span>
           <span data-lang="en">Most popular</span>
@@ -624,12 +1401,12 @@
           <span data-lang="en">A fully smart home. Energy, comfort and security in one.</span>
         </p>
         <ul class="pkg-items">
-          <li class="pkg-item"><span data-lang="nl">Uitgebreide set slimme lampen & sensoren</span><span data-lang="en">Extended set of smart lights & sensors</span></li>
-          <li class="pkg-item"><span data-lang="nl">Energiemonitoring via P1-meter</span><span data-lang="en">Energy monitoring via P1 meter</span></li>
-          <li class="pkg-item"><span data-lang="nl">Slimme thermostaat-integratie</span><span data-lang="en">Smart thermostat integration</span></li>
-          <li class="pkg-item"><span data-lang="nl">10+ automatiseringen op maat</span><span data-lang="en">10+ custom automations</span></li>
-          <li class="pkg-item"><span data-lang="nl">Dashboard op tablet</span><span data-lang="en">Tablet dashboard</span></li>
-          <li class="pkg-item"><span data-lang="nl">AI-koppeling — praat in gewone taal met je huis</span><span data-lang="en">AI link — talk to your home in plain language</span></li>
+          <li class="pkg-item"><span data-lang="nl">Alles uit Starter, plus:</span><span data-lang="en">Everything in Starter, plus:</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 30 lampen, motion sensoren &amp; stekkers aansluiten</span><span data-lang="en">Up to 30 lights, motion sensors &amp; plugs connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Thermostaat óf zonwering aansluiten (naar keuze)</span><span data-lang="en">Thermostat or blinds connected (your choice)</span></li>
+          <li class="pkg-item"><span data-lang="nl">AI-koppeling &amp; uitleg — praat in gewone taal met je huis</span><span data-lang="en">AI link &amp; walkthrough — talk to your home in plain language</span></li>
+          <li class="pkg-item"><span data-lang="nl">Dashboard op je eigen telefoon/tablet</span><span data-lang="en">Dashboard on your own phone/tablet</span></li>
+          <li class="pkg-item"><span data-lang="nl">Tot 15 automatiseringen op maat</span><span data-lang="en">Up to 15 custom automations</span></li>
           <li class="pkg-item"><span data-lang="nl">3 maanden support inbegrepen</span><span data-lang="en">3 months support included</span></li>
         </ul>
         <a href="#contact" class="pkg-cta pkg-cta-light">
@@ -637,22 +1414,23 @@
           <span data-lang="en">Request quote</span>
         </a>
       </div>
-      <!-- Premium -->
-      <div class="package-card">
+      <!-- Pro -->
+      <div class="package-card glass reveal" style="--i:2">
         <div>
-          <div class="pkg-name">Premium</div>
-          <div class="pkg-price">€2.200<span style="font-size:20px">+</span></div>
+          <div class="pkg-name">Pro</div>
+          <div class="pkg-price">€1.999 <span data-lang="nl">eenmalig</span><span data-lang="en">one-time</span></div>
         </div>
         <p class="pkg-desc">
-          <span data-lang="nl">Volledige woningautomatie. Maatwerk van A tot Z.</span>
-          <span data-lang="en">Full home automation. Custom from A to Z.</span>
+          <span data-lang="nl">Volledige woningautomatie, zonder limieten. Voor wie het huis helemaal wil laten meedenken.</span>
+          <span data-lang="en">Full home automation, without limits. For anyone who wants the house to fully think along.</span>
         </p>
         <ul class="pkg-items">
-          <li class="pkg-item"><span data-lang="nl">Alles uit Comfort, plus meer</span><span data-lang="en">Everything in Comfort, plus more</span></li>
-          <li class="pkg-item"><span data-lang="nl">Camera's, slimme deursloten</span><span data-lang="en">Cameras, smart door locks</span></li>
-          <li class="pkg-item"><span data-lang="nl">Multiroom audio-integratie</span><span data-lang="en">Multiroom audio integration</span></li>
-          <li class="pkg-item"><span data-lang="nl">Maatwerk dashboards</span><span data-lang="en">Custom dashboards</span></li>
-          <li class="pkg-item"><span data-lang="nl">Jaarcontract onderhoud & updates</span><span data-lang="en">Annual maintenance & updates contract</span></li>
+          <li class="pkg-item"><span data-lang="nl">Alles uit Starter en Comfort</span><span data-lang="en">Everything in Starter and Comfort</span></li>
+          <li class="pkg-item"><span data-lang="nl">Onbeperkt lampen, motion sensoren &amp; stekkers aansluiten</span><span data-lang="en">Unlimited lights, motion sensors &amp; plugs connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Thermostaat én zonwering aansluiten</span><span data-lang="en">Thermostat and blinds connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Camera's aansluiten</span><span data-lang="en">Cameras connected</span></li>
+          <li class="pkg-item"><span data-lang="nl">Audio-integratie (bv. multiroom via WiiM)</span><span data-lang="en">Audio integration (e.g. multiroom via WiiM)</span></li>
+          <li class="pkg-item"><span data-lang="nl">Onbeperkt automatiseringen op maat</span><span data-lang="en">Unlimited custom automations</span></li>
         </ul>
         <a href="#contact" class="pkg-cta pkg-cta-dark">
           <span data-lang="nl">Neem contact op</span>
@@ -660,7 +1438,7 @@
         </a>
       </div>
       <!-- Support abonnement -->
-      <div class="package-card" style="border: 1.5px dashed var(--bg3); background: var(--bg);">
+      <div class="package-card glass reveal" style="--i:3; border: 1.5px dashed var(--bg3);">
         <div>
           <div class="pkg-name" style="color:var(--accent)">
             <span data-lang="nl">Support abonnement</span>
@@ -673,18 +1451,22 @@
           <span data-lang="en">Always someone who knows your system. I'll fix it — remotely, fast.</span>
         </p>
         <ul class="pkg-items">
-          <li class="pkg-item"><span data-lang="nl">Remote toegang & beheer via Nabu Casa</span><span data-lang="en">Remote access & management via Nabu Casa</span></li>
-          <li class="pkg-item"><span data-lang="nl">Maandelijkse updates & beveiliging</span><span data-lang="en">Monthly updates & security patches</span></li>
+          <li class="pkg-item"><span data-lang="nl">Remote toegang &amp; beheer via Nabu Casa</span><span data-lang="en">Remote access &amp; management via Nabu Casa</span></li>
+          <li class="pkg-item"><span data-lang="nl">Maandelijkse updates &amp; beveiliging</span><span data-lang="en">Monthly updates &amp; security patches</span></li>
           <li class="pkg-item"><span data-lang="nl">Storing? Reactie binnen 24 uur</span><span data-lang="en">Issue? Response within 24 hours</span></li>
           <li class="pkg-item"><span data-lang="nl">Nieuwe automatisering op aanvraag (1/mnd)</span><span data-lang="en">New automations on request (1/month)</span></li>
           <li class="pkg-item"><span data-lang="nl">Maandelijks opzegbaar</span><span data-lang="en">Cancel anytime</span></li>
         </ul>
-        <a href="#contact" class="pkg-cta" style="background:var(--accent-light);color:var(--accent);font-weight:500;border-radius:50px;padding:12px;display:block;text-align:center;text-decoration:none;transition:all 0.22s;">
+        <a href="#contact" class="pkg-cta" style="background:var(--accent-light);color:var(--accent);font-weight:500;border-radius:999px;padding:12px;display:block;text-align:center;text-decoration:none;transition:all 0.3s;">
           <span data-lang="nl">Abonnement aanvragen</span>
           <span data-lang="en">Subscribe</span>
         </a>
       </div>
     </div>
+    <p class="products-note" style="margin-top: 3rem;">
+      <span data-lang="nl">Hardware koop je apart, ná de intake — zelf, of ik regel de inkoop voor je. Welke merken en aantallen je nodig hebt, stellen we samen op maat vast, op basis van je woning en wensen.</span>
+      <span data-lang="en">You buy the hardware separately, after the intake — yourself, or I arrange the purchase for you. We work out exactly which brands and quantities you need together, based on your home and wishes.</span>
+    </p>
   </div>
 </section>
 
@@ -693,17 +1475,17 @@
   <div class="container">
     <div class="ai-inner">
       <div>
-        <p class="section-label">AI assistent</p>
-        <h2 class="section-title">
+        <p class="section-label reveal">AI assistent</p>
+        <h2 class="section-title reveal" style="--i:1">
           <span data-lang="nl">Praat gewoon<br>met je huis.</span>
           <span data-lang="en">Just talk<br>to your home.</span>
         </h2>
-        <p class="section-sub" style="margin-bottom:2.5rem">
+        <p class="section-sub reveal" style="margin-bottom:2.5rem; --i:2">
           <span data-lang="nl">Slim-Home koppelt jouw huis aan slimme AI-technologie. Geen apps leren, geen schema's instellen — gewoon zeggen wat je wilt.</span>
           <span data-lang="en">Slim-Home connects your home to smart AI technology. No apps to learn, no schedules to set — just say what you want.</span>
         </p>
         <div>
-          <div class="ai-feature">
+          <div class="ai-feature reveal" style="--i:3">
             <div class="ai-feature-icon">💬</div>
             <div>
               <div class="ai-feature-title" data-lang="nl">In gewoon Nederlands</div>
@@ -712,7 +1494,7 @@
               <div class="ai-feature-desc" data-lang="en">No technical terms. "Make it cosy when I get home" just works.</div>
             </div>
           </div>
-          <div class="ai-feature">
+          <div class="ai-feature reveal" style="--i:4">
             <div class="ai-feature-icon">⚡</div>
             <div>
               <div class="ai-feature-title" data-lang="nl">Automatiseringen aanmaken zonder code</div>
@@ -721,7 +1503,7 @@
               <div class="ai-feature-desc" data-lang="en">The AI writes the automation for you and installs it directly into your system.</div>
             </div>
           </div>
-          <div class="ai-feature">
+          <div class="ai-feature reveal" style="--i:5">
             <div class="ai-feature-icon">🔒</div>
             <div>
               <div class="ai-feature-title" data-lang="nl">Gratis, lokaal, privé</div>
@@ -732,20 +1514,22 @@
           </div>
         </div>
       </div>
-      <div class="ai-demo">
+      <div class="ai-demo reveal" style="--i:2">
         <div class="ai-demo-title">
           <span data-lang="nl">Live voorbeeld</span>
           <span data-lang="en">Live example</span>
         </div>
-        <div class="chat-bubble user" data-lang="nl" style="background:var(--accent)">"Als de zon ondergaat, doe dan de buitenverlichting aan en dim de woonkamer naar 60%"</div>
-        <div class="chat-bubble user" data-lang="en" style="background:var(--accent)">"When the sun sets, turn on the outdoor lights and dim the living room to 60%"</div>
-        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)" data-lang="nl">
+        <div class="chat-bubble user" data-lang="nl" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))">"Als de zon ondergaat, doe dan de buitenverlichting aan en dim de woonkamer naar 60%"</div>
+        <div class="chat-bubble user" data-lang="en" style="background:linear-gradient(135deg,var(--accent),var(--accent-2))">"When the sun sets, turn on the outdoor lights and dim the living room to 60%"</div>
+        <div class="typing-dots" data-lang="nl"><span></span><span></span><span></span></div>
+        <div class="typing-dots" data-lang="en"><span></span><span></span><span></span></div>
+        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.12)" data-lang="nl">
           ✓ Automatisering aangemaakt: <em>Zonsondergang verlichting</em><br><br>
           Actief op: zonsondergang (wisselend)<br>
           Buitenverlichting → aan<br>
           Woonkamer → 60% helderheid
         </div>
-        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75)" data-lang="en">
+        <div class="chat-bubble" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.12)" data-lang="en">
           ✓ Automation created: <em>Sunset lighting</em><br><br>
           Triggers at: sunset (variable)<br>
           Outdoor lights → on<br>
@@ -761,17 +1545,17 @@
   <div class="container">
     <div class="contact-grid">
       <div>
-        <p class="section-label">Contact</p>
-        <h2 class="section-title">
+        <p class="section-label reveal">Contact</p>
+        <h2 class="section-title reveal" style="--i:1">
           <span data-lang="nl">Maak je huis<br>slimmer.</span>
           <span data-lang="en">Make your home<br>smarter.</span>
         </h2>
-        <p class="section-sub" style="margin-bottom:2.5rem">
+        <p class="section-sub reveal" style="margin-bottom:2.5rem; --i:2">
           <span data-lang="nl">Stuur een berichtje. Ik reageer binnen 24 uur voor een vrijblijvend gesprek.</span>
           <span data-lang="en">Send a message. I'll respond within 24 hours for a no-obligation chat.</span>
         </p>
         <div class="contact-info">
-          <div class="contact-detail">
+          <div class="contact-detail reveal" style="--i:3">
             <div class="contact-detail-icon">📍</div>
             <div>
               <div class="contact-detail-label">
@@ -781,18 +1565,18 @@
               <div class="contact-detail-val">Noord-Holland</div>
             </div>
           </div>
-          <div class="contact-detail">
+          <div class="contact-detail reveal" style="--i:4">
             <div class="contact-detail-icon">⏱</div>
             <div>
               <div class="contact-detail-label">
                 <span data-lang="nl">Beschikbaarheid</span>
                 <span data-lang="en">Availability</span>
               </div>
-              <div class="contact-detail-val" data-lang="nl">Vr, za & zo voor installatie · Doordeweeks op afstand</div>
-              <div class="contact-detail-val" data-lang="en">Fri, Sat & Sun for installs · Weekdays remote support</div>
+              <div class="contact-detail-val" data-lang="nl">Vr, za &amp; zo voor installatie · Doordeweeks op afstand</div>
+              <div class="contact-detail-val" data-lang="en">Fri, Sat &amp; Sun for installs · Weekdays remote support</div>
             </div>
           </div>
-          <div class="contact-detail">
+          <div class="contact-detail reveal" style="--i:5">
             <div class="contact-detail-icon">💬</div>
             <div>
               <div class="contact-detail-label">
@@ -804,29 +1588,43 @@
           </div>
         </div>
       </div>
-      <div>
+      <div class="reveal" style="--i:2">
         <form class="form" action="https://formspree.io/f/xgoqdjpn" method="POST" onsubmit="handleSubmit(event)">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" data-lang="nl">Naam</label>
               <label class="form-label" data-lang="en">Name</label>
-              <input class="form-input" type="text" name="naam" required placeholder="Jan de Vries">
+              <input class="form-input" type="text" name="naam" required="" placeholder="Jan de Vries">
             </div>
             <div class="form-group">
               <label class="form-label">E-mail</label>
-              <input class="form-input" type="email" name="email" required placeholder="jan@example.nl">
+              <input class="form-input" type="email" name="email" required="" placeholder="jan@example.nl">
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" data-lang="nl">Pakket interesse</label>
-            <label class="form-label" data-lang="en">Package interest</label>
-            <select class="form-select" name="pakket">
-              <option>Starter — €399</option>
-              <option selected>Comfort — €899 (meest gekozen)</option>
-              <option>Premium — €2.200+</option>
-              <option data-lang="nl">Weet ik nog niet</option>
-              <option data-lang="en">Not sure yet</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" data-lang="nl">Pakket interesse</label>
+              <label class="form-label" data-lang="en">Package interest</label>
+              <select class="form-select" name="pakket">
+                <option>Starter — €399</option>
+                <option selected="">Comfort — €899 (meest gekozen)</option>
+                <option>Pro — €1.999</option>
+                <option data-lang="nl">Weet ik nog niet</option>
+                <option data-lang="en">Not sure yet</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-lang="nl">Voorkeur apparatuur</label>
+              <label class="form-label" data-lang="en">Hardware preference</label>
+              <select class="form-select" name="apparatuur">
+                <option data-lang="nl">Budget (IKEA)</option>
+                <option data-lang="en">Budget (IKEA)</option>
+                <option data-lang="nl">Premium</option>
+                <option data-lang="en">Premium</option>
+                <option data-lang="nl" selected="">Mix / advies gewenst</option>
+                <option data-lang="en">Mix / want advice</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label" data-lang="nl">Bericht</label>
@@ -839,7 +1637,7 @@
           </button>
           <p class="form-note" data-lang="nl">Geen spam. Reactie binnen 24 uur.</p>
           <p class="form-note" data-lang="en">No spam. Response within 24 hours.</p>
-          <p id="form-success" style="display:none;color:#2D5BE3;font-size:14px;margin-top:8px"></p>
+          <p id="form-success" style="display:none;color:var(--accent);font-size:14px;margin-top:8px"></p>
         </form>
       </div>
     </div>
@@ -854,12 +1652,364 @@
   </div>
 </footer>
 
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-panel glass" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-close" id="modal-close">&times;</div>
+    <div class="modal-header">
+      <div class="modal-icon" id="modal-icon"></div>
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-sub" id="modal-sub"></div>
+      </div>
+    </div>
+    <div class="modal-mode-toggle seg-toggle" id="modal-mode-toggle" style="display:none">
+      <span class="seg-thumb"></span>
+      <button class="mode-btn seg-btn" data-mode="budget" type="button">
+        <span data-lang="nl">Budget</span>
+        <span data-lang="en">Budget</span>
+      </button>
+      <button class="mode-btn seg-btn" data-mode="premium" type="button">Premium</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
 <script>
+var PRODUCT_DATA = {
+  lighting: {
+    hasModes: true, icon: '💡',
+    name: { nl: 'Verlichting', en: 'Lighting' },
+    sub: { nl: 'Dimmen, warm-wit tot vol kleur, tijdschema\'s en scènes voor elke ruimte.', en: 'Dimming, warm-white to full colour, schedules and scenes for every room.' },
+    budget: [
+      { name: 'IKEA KAJPLATS LED-lamp E27, wit spectrum', img: 'https://www.ikea.com/nl/nl/images/products/kajplats-led-lamp-e27-1055-lumen-smart-wit-spectrum-globe-opaalwit__1452572_pe991091_s5.jpg', desc: { nl: 'Dimbaar warm-tot-koelwit licht, opvolger van TRÅDFRI. Sluit aan via de Zigbee-dongle.', en: 'Dimmable warm-to-cool white light, successor to TRÅDFRI. Connects via the Zigbee dongle.' }, price: { nl: '€ 8,99', en: '€ 8.99' } },
+      { name: 'IKEA KAJPLATS LED-lamp E27, kleur + wit spectrum', img: 'https://www.ikea.com/nl/nl/images/products/kajplats-led-lamp-e27-1055-lumen-smart-gekleurd-en-wit-spectrum-globe-opaalwit__1452575_pe991094_s5.jpg', desc: { nl: 'Van wit spectrum tot volledige kleur, in te stellen per scène of tijdstip.', en: 'From white spectrum to full colour, set per scene or time of day.' }, price: { nl: '€ 12,99', en: '€ 12.99' } },
+      { name: 'IKEA KAJPLATS LED-lamp GU10', img: 'https://www.ikea.com/nl/nl/images/products/kajplats-led-lamp-gu10-575-lumen-smart-wit-spectrum__1452573_pe991092_s5.jpg', desc: { nl: 'Voor inbouwspots, dimbaar warm-wit licht.', en: 'For recessed spotlights, dimmable warm-white light.' }, price: { nl: '€ 7,99', en: '€ 7.99' } }
+    ],
+    premium: [
+      { name: 'Philips Hue White & Color Ambiance E27', img: 'https://image.coolblue.nl/max/700xauto/products/2232981', desc: { nl: '16 miljoen kleuren, razendsnelle sync met je scherm en muziek.', en: '16 million colours, near-instant sync with your screen and music.' }, price: { nl: '€ 55,-', en: '€ 55' } },
+      { name: 'Philips Hue Essential White and Color GU10', img: 'https://image.coolblue.nl/max/700xauto/products/2211073', desc: { nl: 'Kleur- en dimbare spot voor inbouwarmaturen.', en: 'Colour and dimmable spot for recessed fixtures.' }, price: { nl: '€ 21,99', en: '€ 21.99' } },
+      { name: 'Philips Hue Play Lichtbalk', img: 'https://image.coolblue.nl/max/700xauto/products/1380114', desc: { nl: 'Sfeerverlichting achter de tv of langs de muur, sync met beeld.', en: 'Ambient lighting behind the TV or along the wall, syncs with the screen.' }, price: { nl: '€ 70,-', en: '€ 70' } }
+    ]
+  },
+  motion: {
+    hasModes: true, icon: '🚶',
+    name: { nl: 'Beweging & aanwezigheid', en: 'Motion & presence' },
+    sub: { nl: 'Licht dat vanzelf aangaat, alarmen die weten of er iemand thuis is.', en: 'Lights that switch on by themselves, alarms that know whether someone\'s home.' },
+    budget: [
+      { name: 'IKEA MYGGSPRAY bewegingssensor', img: 'https://www.ikea.com/nl/nl/images/products/myggspray-draadloze-bewegingssensor-smart__1420239_pe977223_s5.jpg', desc: { nl: 'Draadloze bewegingsdetectie, plak- of schroefbevestiging, jarenlange batterijduur (opvolger van VALLHORN). Werkt via Matter/Thread, geen Zigbee — een Thread-grensrouter (zoals een Apple TV of Google Nest) is dan nodig.', en: 'Wireless motion detection, stick or screw mount, battery lasts years (successor to VALLHORN). Uses Matter/Thread, not Zigbee — needs a Thread border router (e.g. an Apple TV or Google Nest).' }, price: { nl: '€ 8,99', en: '€ 8.99' } }
+    ],
+    premium: [
+      { name: 'Aqara Presence Sensor FP2 (mmWave)', img: 'https://media.s-bol.com/x5AZqMyroLj9/Kp7zXJ/550x410.jpg', desc: { nl: 'mmWave-aanwezigheidsdetectie in plaats van enkel beweging, meerdere zones per sensor, geen valse meldingen meer.', en: 'mmWave presence detection instead of just motion, multiple zones per sensor, no more false triggers.' }, price: { nl: '€ 69,-', en: '€ 69' } },
+      { name: 'Aqara Motion Sensor P1', img: 'https://media.s-bol.com/NXzZA23Nrmgm/Eq0p5Yk/550x548.jpg', desc: { nl: 'Compacte bewegingssensor met groter bereik en snellere respons.', en: 'Compact motion sensor with longer range and faster response.' }, price: { nl: '€ 20,99', en: '€ 20.99' } }
+    ]
+  },
+  doorwindow: {
+    hasModes: true, icon: '🚪',
+    name: { nl: 'Deur- & raamsensoren', en: 'Door & window sensors' },
+    sub: { nl: 'Weet altijd of iets open, dicht of geforceerd is.', en: 'Always know if something\'s open, closed, or forced.' },
+    budget: [
+      { name: 'IKEA MYGGBETT deur-/raamsensor', img: 'https://www.ikea.com/nl/nl/images/products/myggbett-deur-raamsensor-smart__1420257_pe977237_s5.jpg', desc: { nl: 'Compact, direct te koppelen aan automatiseringen zoals "licht uit bij open raam" (opvolger van PARASOLL). Werkt via Matter/Thread, geen Zigbee.', en: 'Compact, hooks straight into automations like "lights off when window opens" (successor to PARASOLL). Uses Matter/Thread, not Zigbee.' }, price: { nl: '€ 5,99', en: '€ 5.99' } }
+    ],
+    premium: [
+      { name: 'Aqara Door and Window Sensor P2', img: 'https://media.s-bol.com/77qp8BxmrG4j/Z6vKk5v/268x840.jpg', desc: { nl: 'Kleiner, met vibratiedetectie voor extra inbraakdetectie.', en: 'Smaller, adds vibration detection for extra break-in detection.' }, price: { nl: '€ 26,85', en: '€ 26.85' } },
+      { name: 'Reolink Argus B330 camera', img: 'https://image.coolblue.nl/max/700xauto/products/1144964911', desc: { nl: 'Visuele bevestiging bij een melding, opname bij beweging.', en: 'Visual confirmation on an alert, records on motion.' }, price: { nl: '€ 76,-', en: '€ 76' } }
+    ]
+  },
+  climate: {
+    hasModes: true, icon: '🌡️',
+    name: { nl: 'Klimaat & verwarming', en: 'Climate & heating' },
+    sub: { nl: 'Elke ruimte op de juiste temperatuur, automatisch en op afstand.', en: 'Every room at the right temperature, automatically and remotely.' },
+    budget: [
+      { name: 'Moes Zigbee 3.0 Radiatorknop', img: 'https://media.s-bol.com/4O6o3KYQ9292/y84MDyg/550x555.jpg', desc: { nl: 'Vervangt de handmatige knop, programmeerbaar per ruimte, werkt via dezelfde Zigbee-dongle als je andere apparaten. IKEA heeft hier zelf (nog) geen product voor.', en: 'Replaces the manual valve, programmable per room, works via the same Zigbee dongle as your other devices. IKEA doesn\'t (yet) make one of these itself.' }, price: { nl: '€ 39,95 per radiator', en: '€ 39.95 per radiator' } }
+    ],
+    premium: [
+      { name: 'Tado° Slimme Radiatorknop X', img: 'https://image.coolblue.nl/max/700xauto/products/2097508', desc: { nl: 'Weersafhankelijke regeling en geofencing — verwarming automatisch lager als iedereen weg is.', en: 'Weather-adaptive control and geofencing — heating automatically down when everyone\'s out.' }, price: { nl: '€ 100,-', en: '€ 100' } }
+    ]
+  },
+  curtains: {
+    hasModes: true, icon: '🪟',
+    name: { nl: 'Gordijnen & zonwering', en: 'Curtains & blinds' },
+    sub: { nl: 'Rolgordijnen die opengaan met de zon, dichtgaan bij fel licht, of op tijdschema.', en: 'Roller blinds that open with the sun, close in bright light, or follow a schedule.' },
+    budget: [
+      { name: 'Aqara Curtain Driver E1 (Rails versie)', img: 'https://media.s-bol.com/gM0JzzN63r3Y/089OL/550x524.jpg', desc: { nl: 'Motoriseert je bestaande gordijnrail via Zigbee, geen boren nodig. IKEA stopte met FYRTUR/KADRILJ — dit is de betaalbaarste betrouwbare vervanging.', en: 'Motorises your existing curtain rail via Zigbee, no drilling needed. IKEA discontinued FYRTUR/KADRILJ — this is the most affordable reliable replacement.' }, price: { nl: '€ 84,99', en: '€ 84.99' } }
+    ],
+    premium: [
+      { name: 'Somfy Oximo io (io-homecontrol)', img: 'https://media.s-bol.com/gq2XNgmVmwyZ/XDwQM8W/550x296.jpg', desc: { nl: 'Professionele buismotor voor rolluiken en zonwering — ook bij grote of zware ramen.', en: 'Professional-grade tube motor for shutters and blinds — even large or heavy windows.' }, price: { nl: '€ 199,95', en: '€ 199.95' } }
+    ]
+  },
+  plugs: {
+    hasModes: true, icon: '🔌',
+    name: { nl: 'Stopcontacten & schakelaars', en: 'Plugs & switches' },
+    sub: { nl: 'Maak elk "dom" apparaat slim, of automatiseer je bestaande lichtschakelaars.', en: 'Make any "dumb" appliance smart, or automate your existing light switches.' },
+    budget: [
+      { name: 'IKEA TRETAKT slimme stekker', img: 'https://www.ikea.com/nl/nl/images/products/tretakt-stekker-smart__1201824_pe905725_s5.jpg', desc: { nl: 'Tussen stopcontact en apparaat, direct app- en spraakbediening. Nog altijd gewoon Zigbee.', en: 'Between socket and appliance, instant app and voice control. Still genuinely Zigbee.' }, price: { nl: '€ 6,99', en: '€ 6.99' } },
+      { name: 'IKEA BILRESA schakelaar', img: 'https://www.ikea.com/nl/nl/images/products/bilresa-afstandsbediening-wit-smart-dubbele-knop__1402959_pe969197_s5.jpg', desc: { nl: 'Draadloze dubbele knop die je overal kunt plakken of neerzetten (opvolger van SOMRIG).', en: 'Wireless double button you can stick or place anywhere (successor to SOMRIG).' }, price: { nl: '€ 5,99', en: '€ 5.99' } }
+    ],
+    premium: [
+      { name: 'Shelly Plus 1PM', img: 'https://media.s-bol.com/rGWxXw1WYKJp/pYq3XkV/550x530.jpg', desc: { nl: 'Verdwijnt achter je bestaande schakelaar, die blijft gewoon werken, plus app-bediening en energiemeting erbij.', en: 'Hides behind your existing switch, which keeps working as normal, with app control and power metering added.' }, price: { nl: '€ 24,94', en: '€ 24.94' } },
+      { name: 'Aqara Single Switch T1 module', img: 'https://media.s-bol.com/JKPmBzDBBJVP/GwLG57/550x550.jpg', desc: { nl: 'Compacte inbouwmodule voor achter de schakelaar.', en: 'Compact module that fits behind the switch.' }, price: { nl: '€ 23,60', en: '€ 23.60' } }
+    ]
+  },
+  air: {
+    hasModes: true, icon: '🌬️',
+    name: { nl: 'Luchtkwaliteit & energie', en: 'Air quality & energy' },
+    sub: { nl: 'Zicht op CO₂, vocht en stroomverbruik — en automatisch bijsturen.', en: 'Insight into CO₂, humidity and power use — with automatic adjustments.' },
+    budget: [
+      { name: 'IKEA ALPSTUGA', img: 'https://www.ikea.com/nl/nl/images/products/alpstuga-luchtkwaliteitsensor-smart__1515884_pe1011656_s5.jpg', desc: { nl: 'Meet fijnstof, CO₂ en luchtvochtigheid, met scherm (opvolger van VINDSTYRKA). Werkt via Matter/Thread, geen Zigbee.', en: 'Measures particulates, CO₂ and humidity, with a display (successor to VINDSTYRKA). Uses Matter/Thread, not Zigbee.' }, price: { nl: '€ 29,99', en: '€ 29.99' } }
+    ],
+    premium: [
+      { name: 'Netatmo Smart Home Weather Station', img: 'https://image.coolblue.nl/max/700xauto/products/1707050442', desc: { nl: 'Binnen- en buitenmodule, gedetailleerde trends in de app.', en: 'Indoor and outdoor module, detailed trends in the app.' }, price: { nl: '€ 134,-', en: '€ 134' } },
+      { name: 'HomeWizard P1-meter', img: 'https://media.s-bol.com/JmA4xMW9z8kv/qYLx5BG/457x840.jpg', desc: { nl: 'Live energieverbruik van je hele huis, direct in je Home Assistant dashboard.', en: 'Live energy use for your whole home, straight into your Home Assistant dashboard.' }, price: { nl: '€ 32,99', en: '€ 32.99' } }
+    ]
+  },
+  locks: {
+    hasModes: true, icon: '🔒',
+    name: { nl: 'Deursloten', en: 'Smart locks' },
+    sub: { nl: 'Naar binnen zonder sleutel, op afstand meekijken wie er is geweest.', en: 'Get in without a key, check remotely who\'s been by.' },
+    budget: [
+      { name: 'Nuki Smart Lock Go', img: 'https://image.coolblue.nl/max/700xauto/products/2149932', desc: { nl: 'IKEA heeft geen eigen slim slot — dit is het officiële "Works with Home Assistant"-instapmodel van Nuki, past op je bestaande cilinder.', en: 'IKEA doesn\'t make a smart lock — this is Nuki\'s official "Works with Home Assistant" entry model, fits your existing cylinder.' }, price: { nl: '€ 144,-', en: '€ 144' } }
+    ],
+    premium: [
+      { name: 'Nuki Smart Lock Pro', img: 'https://image.coolblue.nl/max/700xauto/products/2176356', desc: { nl: 'Autolock, tijdelijke digitale sleutels voor gasten, ingebouwde wifi.', en: 'Auto-lock, temporary digital keys for guests, built-in wifi.' }, price: { nl: '€ 269,-', en: '€ 269' } },
+      { name: 'Yale Linus Smart Lock L2', img: 'https://media.s-bol.com/OjWlR5Ylrpqr/kRxD1R5/550x771.jpg', desc: { nl: 'Discreet ontwerp, koppelt met je bestaande cilinder.', en: 'Discreet design, fits your existing cylinder.' }, price: { nl: '€ 149,-', en: '€ 149' } }
+    ]
+  },
+  audio: {
+    hasModes: true, icon: '🔊',
+    name: { nl: 'Audio & entertainment', en: 'Audio & entertainment' },
+    sub: { nl: 'Muziek die met je meeloopt door het huis, aangestuurd door dezelfde automatiseringen. Veel moderne installaties zijn al te besturen via Home Assistant — tijdens de intake bekijken we dat samen.', en: 'Music that follows you through the house, run by the same automations. Many modern setups can already be controlled via Home Assistant — we\'ll take a good look at yours during the intake.' },
+    budget: [
+      { name: 'WiiM Mini', img: 'https://image.coolblue.nl/max/700xauto/products/2038095', desc: { nl: 'Klein streamertje dat je eigen speaker of versterker slim en multiroom-geschikt maakt, zonder iets te vervangen.', en: 'Small streamer that makes your own speaker or amplifier smart and multiroom-ready, without replacing anything.' }, price: { nl: '€ 99,-', en: '€ 99' } }
+    ],
+    premium: [
+      { name: 'WiiM Amp', img: 'https://image.coolblue.nl/max/700xauto/products/2038171', desc: { nl: 'Streaming-versterker die elke passieve speaker (ook bestaande) omtovert tot een volwaardig multiroom-systeem.', en: 'Streaming amplifier that turns any passive speaker (existing ones too) into a full multiroom system.' }, price: { nl: '€ 369,-', en: '€ 369' } }
+    ]
+  },
+  humidity: {
+    hasModes: true, icon: '💧',
+    name: { nl: 'Vochtmeters', en: 'Humidity sensors' },
+    sub: { nl: 'Voorkom vocht en schimmel — weet precies hoe vochtig het is in de badkamer, kelder of kruipruimte.', en: 'Prevent damp and mould — know exactly how humid your bathroom, basement or crawl space is.' },
+    budget: [
+      { name: 'Aqara Temperature and Humidity Sensor T1', img: 'https://media.s-bol.com/rDq6Yz35Kp7w/Q1glp2G/550x537.jpg', desc: { nl: 'Piepklein batterijsensortje voor badkamer, kelder of kruipruimte, met melding bij schimmelrisico. Gewoon via Zigbee.', en: 'Tiny battery sensor for bathroom, basement or crawl space, with a mould-risk alert. Plain Zigbee.' }, price: { nl: '€ 18,70 per sensor', en: '€ 18.70 per sensor' } }
+    ],
+    premium: [
+      { name: 'IKEA ALPSTUGA', img: 'https://www.ikea.com/nl/nl/images/products/alpstuga-luchtkwaliteitsensor-smart__1515884_pe1011656_s5.jpg', desc: { nl: 'Naast luchtvochtigheid ook luchtkwaliteit op het scherm (opvolger van VINDSTYRKA). Werkt via Matter/Thread, geen Zigbee.', en: 'Shows air quality alongside humidity on its display (successor to VINDSTYRKA). Uses Matter/Thread, not Zigbee.' }, price: { nl: '€ 29,99', en: '€ 29.99' } }
+    ]
+  },
+  automations: {
+    hasModes: false, icon: '⚙️',
+    name: { nl: 'Automatiseringen', en: 'Automations' },
+    sub: { nl: 'De koppeling tussen al je apparaten — dit is waar het slimme huis echt tot leven komt.', en: 'The link between all your devices — this is where the smart home really comes alive.' },
+    note: { nl: 'Dit zijn slechts enkele voorbeelden. Vrijwel alles wat je hebt aangesloten kan aan elkaar gekoppeld worden — tijdens de intake bedenken we samen welke automatiseringen voor jouw huis zinvol zijn.', en: 'These are just a few examples. Almost anything you\'ve connected can be linked together — during the intake we\'ll figure out together which automations make sense for your home.' },
+    items: [
+      { icon: '🌅', title: { nl: 'Ochtendroutine', en: 'Morning routine' }, desc: { nl: 'Gordijnen open, licht geleidelijk feller, verwarming aan — allemaal op jouw wektijd.', en: 'Curtains open, lights gradually brighten, heating on — all timed to when you wake up.' }, example: { nl: '"Maak me elke werkdag om 7:00 wakker met licht"', en: '"Wake me up with light at 7am on weekdays"' } },
+      { icon: '🎬', title: { nl: 'Filmavond', en: 'Movie night' }, desc: { nl: 'Eén tik en de woonkamer dimt naar 20%, tv en soundbar gaan aan.', en: 'One tap and the living room dims to 20%, TV and soundbar switch on.' }, example: { nl: '"Zet de filmstand aan"', en: '"Turn on movie mode"' } },
+      { icon: '🚶', title: { nl: 'Aanwezigheidsdetectie', en: 'Presence detection' }, desc: { nl: 'Licht gaat vanzelf aan zodra je een ruimte binnenkomt, en uit zodra iedereen weg is.', en: 'Lights switch on by themselves as you enter a room, and off once everyone\'s left.' }, example: { nl: 'Automatisch — geen commando nodig', en: 'Automatic — no command needed' } },
+      { icon: '🔒', title: { nl: 'Weg van huis', en: 'Leaving home' }, desc: { nl: 'Verwarming omlaag, lampen uit, deuren op slot — met één druk op de knop of automatisch via je telefoon.', en: 'Heating down, lights off, doors locked — with one tap or automatically via your phone.' }, example: { nl: '"Ik ga weg"', en: '"I\'m leaving"' } },
+      { icon: '🌙', title: { nl: 'Slaapmodus', en: 'Bedtime mode' }, desc: { nl: 'Alle lichten uit, deuren gecontroleerd, thermostaat naar nachtstand.', en: 'All lights off, doors checked, thermostat to night mode.' }, example: { nl: '"Ik ga slapen"', en: '"I\'m going to sleep"' } }
+    ]
+  },
+  voice: {
+    hasModes: false, icon: '🗣️',
+    name: { nl: 'Stembediening', en: 'Voice control' },
+    sub: { nl: 'Praat gewoon tegen je huis — via een apparaat dat je misschien al hebt staan. Handige bijkomstigheid: dezelfde speaker/tv doet vaak ook dienst als Thread-grensrouter voor Matter-sensoren (zie "Het brein" bij Producten).', en: 'Just talk to your home — via a device you might already own. Handy side effect: the same speaker/TV often also works as a Thread border router for Matter sensors (see "The brain" under Products).' },
+    items: [
+      { icon: '🔵', title: { nl: 'Google Assistant', en: 'Google Assistant' }, desc: { nl: 'Via een Google Nest-speaker/display of Android-telefoon. Home Assistant koppel je eenmalig met je Google-account.', en: 'Via a Google Nest speaker/display or Android phone. Link Home Assistant to your Google account once.' }, example: { nl: '"Hey Google, zet de woonkamerlampen op 50%"', en: '"Hey Google, set the living room lights to 50%"' } },
+      { icon: '⚪', title: { nl: 'Apple Home (Siri)', en: 'Apple Home (Siri)' }, desc: { nl: 'Via een HomePod, Apple TV of iPhone. Home Assistant meldt zich aan als HomeKit-brug — geen aparte app nodig.', en: 'Via a HomePod, Apple TV or iPhone. Home Assistant registers itself as a HomeKit bridge — no separate app needed.' }, example: { nl: '"Hé Siri, doe het licht in de gang uit"', en: '"Hey Siri, turn off the hallway light"' } },
+      { icon: '🟠', title: { nl: 'Amazon Alexa', en: 'Amazon Alexa' }, desc: { nl: 'Via een Echo-speaker. Je koppelt de Home Assistant-skill eenmalig in de Alexa-app.', en: 'Via an Echo speaker. Link the Home Assistant skill once in the Alexa app.' }, example: { nl: '"Alexa, zet de verwarming op 20 graden"', en: '"Alexa, set the heating to 20 degrees"' } }
+    ]
+  }
+};
+
+var modalOverlay = document.getElementById('modal-overlay');
+var modalBody = document.getElementById('modal-body');
+var modalModeToggle = document.getElementById('modal-mode-toggle');
+var currentModalKey = null;
+
+function isEnLang() { return document.body.classList.contains('en'); }
+function currentGlobalMode() {
+  var grid = document.getElementById('products-grid');
+  return grid ? grid.dataset.mode : 'budget';
+}
+
+function renderModalItems(list) {
+  var lang = isEnLang() ? 'en' : 'nl';
+  var html = '<div class="modal-items">';
+  list.forEach(function (item) {
+    var media = item.img
+      ? '<img src="' + item.img + '" alt="' + item.name + '" loading="lazy">'
+      : '<span class="modal-item-fallback">📦</span>';
+    html += '<div class="modal-item"><div class="modal-item-media">' + media + '</div><div class="modal-item-body">' +
+      '<div class="modal-item-name">' + item.name + '</div>' +
+      '<div class="modal-item-desc">' + item.desc[lang] + '</div>' +
+      '<div class="modal-item-price">' + item.price[lang] + '</div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderModalFlat(list) {
+  var lang = isEnLang() ? 'en' : 'nl';
+  var html = '<div class="modal-flat-list">';
+  list.forEach(function (item) {
+    html += '<div class="modal-flat-item"><div class="modal-flat-item-icon">' + item.icon + '</div><div>' +
+      '<div class="modal-flat-item-title">' + item.title[lang] + '</div>' +
+      '<div class="modal-flat-item-desc">' + item.desc[lang] + '</div>' +
+      '<div class="modal-flat-item-example">' + item.example[lang] + '</div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderModal() {
+  if (!currentModalKey) return;
+  var data = PRODUCT_DATA[currentModalKey];
+  var lang = isEnLang() ? 'en' : 'nl';
+  document.getElementById('modal-icon').textContent = data.icon;
+  document.getElementById('modal-title').textContent = data.name[lang];
+  document.getElementById('modal-sub').textContent = data.sub[lang];
+  if (data.hasModes) {
+    modalModeToggle.style.display = '';
+    var mode = currentGlobalMode();
+    modalModeToggle.querySelectorAll('.mode-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
+    moveThumb(modalModeToggle);
+    modalBody.innerHTML = renderModalItems(data[mode]);
+  } else {
+    modalModeToggle.style.display = 'none';
+    modalBody.innerHTML = renderModalFlat(data.items);
+  }
+  if (data.note) {
+    modalBody.innerHTML += '<p class="modal-note">' + data.note[lang] + '</p>';
+  }
+}
+
+function openModal(key) {
+  if (!PRODUCT_DATA[key]) return;
+  currentModalKey = key;
+  renderModal();
+  modalOverlay.classList.add('open');
+  document.body.classList.add('modal-open');
+}
+
+function closeModal() {
+  modalOverlay.classList.remove('open');
+  document.body.classList.remove('modal-open');
+  currentModalKey = null;
+}
+
+document.getElementById('products-grid').addEventListener('click', function (e) {
+  var card = e.target.closest('.product-card[data-modal-key]');
+  if (card) openModal(card.dataset.modalKey);
+});
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', function (e) { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && currentModalKey) closeModal(); });
+modalModeToggle.querySelectorAll('.mode-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.mode === btn.dataset.mode); });
+    document.getElementById('products-grid').dataset.mode = btn.dataset.mode;
+    moveThumb(document.getElementById('mode-toggle'));
+    renderModal();
+  });
+});
+
 function setLang(lang) {
+  var wasModalOpen = document.body.classList.contains('modal-open');
   document.body.className = lang === 'en' ? 'en' : '';
+  if (wasModalOpen) document.body.classList.add('modal-open');
   document.getElementById('btn-nl').classList.toggle('active', lang === 'nl');
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
   document.documentElement.lang = lang;
+  moveThumb(document.getElementById('lang-toggle'));
+  renderModal();
+}
+
+function moveThumb(container) {
+  const thumb = container.querySelector('.seg-thumb');
+  const active = container.querySelector('.seg-btn.active') || container.querySelector('.seg-btn');
+  if (!thumb || !active) return;
+  thumb.style.width = active.offsetWidth + 'px';
+  thumb.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+}
+
+function initSegToggle(container) {
+  requestAnimationFrame(() => moveThumb(container));
+  container.querySelectorAll('.seg-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { moveThumb(container); });
+  });
+}
+
+document.querySelectorAll('.seg-toggle').forEach(initSegToggle);
+window.addEventListener('resize', function () {
+  document.querySelectorAll('.seg-toggle').forEach(moveThumb);
+});
+window.addEventListener('load', function () {
+  document.querySelectorAll('.seg-toggle').forEach(moveThumb);
+});
+
+document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('products-grid').dataset.mode = btn.dataset.mode;
+    moveThumb(document.getElementById('mode-toggle'));
+    renderModal();
+  });
+});
+
+/* Scroll progress + nav state */
+var navEl = document.getElementById('nav');
+var progressEl = document.getElementById('scroll-progress');
+window.addEventListener('scroll', function () {
+  var scrollTop = window.scrollY;
+  var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressEl.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+  navEl.classList.toggle('scrolled', scrollTop > 40);
+}, { passive: true });
+
+/* Hero spotlight follows cursor */
+var heroSection = document.getElementById('hero-section');
+var spotlight = document.getElementById('spotlight');
+if (heroSection && spotlight && window.matchMedia('(hover: hover)').matches) {
+  heroSection.addEventListener('mousemove', function (e) {
+    var rect = heroSection.getBoundingClientRect();
+    var x = ((e.clientX - rect.left) / rect.width) * 100;
+    var y = ((e.clientY - rect.top) / rect.height) * 100;
+    spotlight.style.setProperty('--x', x + '%');
+    spotlight.style.setProperty('--y', y + '%');
+  });
+}
+
+/* Reveal on scroll */
+var promoVideo = document.getElementById('promo-video');
+var promoFrame = document.getElementById('video-frame');
+document.getElementById('video-play').addEventListener('click', function () {
+  promoVideo.controls = true;
+  promoVideo.play();
+  promoFrame.classList.add('playing');
+});
+promoVideo.addEventListener('ended', function () {
+  promoVideo.controls = false;
+  promoVideo.load();
+  promoFrame.classList.remove('playing');
+});
+
+var revealEls = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  revealEls.forEach(function (el) { io.observe(el); });
+} else {
+  revealEls.forEach(function (el) { el.classList.add('in-view'); });
 }
 
 async function handleSubmit(e) {
@@ -906,5 +2056,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 </script>
+
 </body>
 </html>
