@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1020">
+<title>Darts Party</title>
+<style>
+  :root { --bg: #0b1020; --panel: #151c33; --panel2: #1d2745; --text: #f2f5ff; --dim: #9aa6c8; --ok: #2ecc71; --bad: #ff4d5e; --gold: #ffd60a; --line: #2a3558; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font: 18px/1.35 -apple-system, "Segoe UI", Roboto, sans-serif; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  body { padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px, env(safe-area-inset-left)); }
+  main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 14px 0 28px; }
+  h1 { margin: 6px 0 2px; font-size: 34px; letter-spacing: .5px; }
+  .sub { color: var(--dim); margin: 0 0 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-bottom: 12px; }
+  label.row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; display: inline-block; }
+  input, select { font: inherit; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; -webkit-user-select: text; user-select: text; }
+  input { flex: 1; }
+  select { flex: none; max-width: 52%; }
+  .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+  .seg button { flex: 1; min-width: 70px; }
+  button { font: inherit; font-weight: 700; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 13px 16px; cursor: pointer; }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .35; }
+  button.on { background: var(--gold); color: #1a1500; border-color: var(--gold); }
+  button.big { font-size: 22px; padding: 18px; width: 100%; }
+  button.go { background: var(--ok); border-color: var(--ok); color: #04210f; }
+  button.bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .ghost { background: transparent; color: var(--dim); font-weight: 500; }
+  small.k { display: block; color: var(--dim); text-transform: uppercase; letter-spacing: 1.5px; font-size: 12px; margin-bottom: 6px; }
+  details { margin: 6px 0 12px; color: var(--dim); } summary { cursor: pointer; padding: 6px 0; } details p { margin: 6px 0; color: var(--text); font-size: 16px; }
+  .hub { display: grid; gap: 12px; }
+  .hub button { text-align: left; padding: 18px; display: flex; gap: 14px; align-items: center; }
+  .hub .em { font-size: 40px; } .hub b { font-size: 22px; display: block; } .hub span.d { font-weight: 400; color: var(--dim); font-size: 15px; }
+  .cols { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .cols > .l { flex: 1 1 340px; min-width: 0; } .cols > .r { flex: 1 1 320px; min-width: 0; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; } .topbar b { color: var(--dim); font-weight: 600; }
+  /* missie */
+  .board { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip { flex: 1 1 130px; background: var(--panel); border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; min-width: 0; }
+  .chip.me { border-color: var(--c); box-shadow: 0 0 0 2px var(--c) inset, 0 0 18px -4px var(--c); }
+  .chip.dead { opacity: .4; text-decoration: line-through; }
+  .chip .n { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .chip .n i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .chip .s { font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .pips { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; min-height: 10px; }
+  .pips b { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .pips b.y { background: var(--ok); } .pips b.n { background: var(--bad); }
+  .stage { --c: #fff; }
+  .who { text-align: center; font-size: 24px; font-weight: 800; color: var(--c); }
+  .who span { color: var(--dim); font-weight: 500; font-size: 17px; display: block; }
+  .mission { background: var(--panel); border: 2px solid var(--c); border-radius: 26px; padding: 26px 20px; margin: 12px 0; text-align: center; font-size: clamp(28px, 6.2vw, 52px); font-weight: 800; line-height: 1.15; box-shadow: 0 0 40px -14px var(--c); }
+  .mission .pr { display: block; margin-top: 12px; font-size: 15px; font-weight: 500; color: var(--dim); }
+  .actions { display: flex; gap: 12px; } .actions button { flex: 1; }
+  .bar { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  /* gooi-invoer */
+  .pad { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 12px; }
+  .darts { display: flex; gap: 8px; margin-bottom: 10px; }
+  .darts div { flex: 1; text-align: center; padding: 10px 0; border-radius: 12px; background: var(--panel2); color: var(--dim); font-weight: 800; font-size: 20px; }
+  .darts div.f { color: var(--text); background: #2c3a68; }
+  .mults { display: flex; gap: 8px; margin-bottom: 8px; } .mults button { flex: 1; padding: 11px 4px; }
+  .nums { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+  .nums button { padding: 14px 0; font-size: 21px; }
+  .nums button.w2 { grid-column: span 2; }
+  .tn { background: var(--panel); border: 2px solid var(--c); border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; font-size: 16px; }
+  .tn b { color: var(--text); } .tn .big2 { font-size: 22px; font-weight: 800; color: var(--c); display: block; margin-bottom: 4px; }
+  .tn .log { color: var(--gold); margin-top: 4px; font-weight: 600; }
+  /* killer */
+  .kcard { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: var(--panel); border: 2px solid var(--line); margin-bottom: 8px; }
+  .kcard.me { border-color: var(--c); box-shadow: 0 0 22px -6px var(--c); }
+  .kcard.dead { opacity: .4; } .kcard.dead .nm { text-decoration: line-through; }
+  .kcard .num { font-size: 40px; font-weight: 900; color: var(--c); min-width: 64px; text-align: center; line-height: 1; }
+  .kcard .nm { font-weight: 700; } .kcard .st { margin-left: auto; font-size: 26px; letter-spacing: 3px; white-space: nowrap; }
+  .kcard .st .e { opacity: .25; filter: grayscale(1); }
+  /* tycoon */
+  .toast { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) scale(.8); max-width: 92vw; text-align: center; font-size: 30px; font-weight: 900; padding: 14px 24px; border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s; z-index: 5; }
+  .toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
+  .toast.ok { background: var(--ok); color: #04210f; } .toast.bad { background: var(--bad); color: #fff; } .toast.info { background: var(--gold); color: #1a1500; }
+  .rank { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--panel2); margin-bottom: 8px; font-size: 22px; }
+  .rank.w { background: var(--gold); color: #1a1500; font-weight: 800; } .rank .sc { margin-left: auto; font-weight: 800; }
+  /* ---------- Monopoly: zelfde uiterlijk als de overlay ---------- */
+  body.ty { background: radial-gradient(1200px 800px at 30% 40%, #141c30 0%, #080b12 70%); font-family: "Bahnschrift", "Segoe UI", system-ui, sans-serif; }
+  main.wide { max-width: 1600px; padding: 10px 0; }
+  .tyapp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 470px); gap: 22px; align-items: center; min-height: calc(100vh - 20px); }
+  .tystage { position: relative; padding-top: 58px; min-width: 0; }
+  #tyhead { position: absolute; left: 0; right: 0; top: 4px; display: flex; justify-content: center; z-index: 3; }
+  .tturn { padding: 7px 22px; border-radius: 99px; background: rgba(10,14,22,.9); border: 2px solid var(--tc); font-size: clamp(15px, 2.2vw, 26px); white-space: nowrap; box-shadow: 0 0 30px -8px var(--tc); display: flex; align-items: center; gap: 12px; max-width: 100%; }
+  .tturn > span:first-child { overflow: hidden; text-overflow: ellipsis; } .tturn b { color: var(--tc); }
+  .darts3 { display: flex; gap: 6px; padding-left: 12px; border-left: 2px solid rgba(255,255,255,.18); }
+  .dart-ic { width: 40px; height: 18px; } .dart-ic .fill { fill: rgba(255,255,255,.12); stroke: rgba(255,255,255,.3); stroke-width: 1; } .dart-ic.on .fill { fill: var(--tc); stroke: #fff; } .dart-ic.on { animation: pop .3s ease-out; }
+  @keyframes pop { from { transform: scale(.6); } to { transform: scale(1); } }
+  .tgt.pulse { animation: tgt 1.1s ease-in-out infinite; } @keyframes tgt { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .tytools { position: fixed; top: 10px; right: 14px; z-index: 20; } .tytools button { width: 42px; height: 42px; padding: 0; border-radius: 50%; background: rgba(18,24,38,.88); font-size: 18px; }
+  .boardwrap { position: relative; width: min(100%, calc(100vh - 96px)); aspect-ratio: 1; margin: 0 auto; filter: drop-shadow(0 20px 50px rgba(0,0,0,.6)); }
+  .boardwrap > svg { display: block; width: 100%; height: 100%; }
+  .pawn { transition: transform .16s linear; }
+  /* de bediening in het midden van het bord */
+  .tycenter { position: absolute; left: 13.5%; top: 13.5%; width: 73%; height: 73%; container-type: inline-size; }
+  .cin { height: 100%; display: flex; flex-direction: column; gap: 1.6cqw; padding: 1.6cqw; font-size: 4.4cqw; }
+  .tycenter button { font-size: 1em; padding: 0 1cqw; border-radius: 2cqw; background: rgba(8,14,26,.82); border: .35cqw solid rgba(255,255,255,.16); color: #fff; font-weight: 800; }
+  .chead { display: flex; gap: 1.6cqw; height: 13cqw; flex: none; }
+  .cp { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; border-radius: 2.4cqw; background: rgba(0,0,0,.34); border: .5cqw dashed rgba(255,255,255,.2); color: rgba(255,255,255,.55); min-width: 0; }
+  .cp b { font-size: 1.15em; } .cp span { font-size: .6em; opacity: .85; }
+  .cp.on { background: var(--tc); border: .5cqw solid transparent; color: #07101a; animation: pop .35s ease-out; }
+  .ctot { width: 17cqw; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 2.4cqw; background: rgba(0,0,0,.45); border: .5cqw solid var(--tc); line-height: 1; }
+  .ctot b { font-size: 1.7em; } .ctot span { font-size: .52em; color: #aab6cc; margin-top: .6cqw; }
+  #cmode { width: 11cqw; flex: none; font-size: 1.3em; }
+  .cmid { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1.6cqw; justify-content: center; align-items: center; }
+  .cmid.pad { align-items: stretch; justify-content: stretch; }
+  .cmults { display: flex; gap: 1.6cqw; height: 10cqw; flex: none; } .cmults button { flex: 1; }
+  .cnums { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(5, 1fr); gap: 1.4cqw; }
+  .cnums button { grid-column: span 2; font-size: 1.15em; } .cnums button.w3 { grid-column: span 5; }
+  .tycenter button.on { background: #ffd84d; color: #1a1500; border-color: #ffd84d; }
+  .tycenter button.tg { box-shadow: 0 0 0 .6cqw #fff inset, 0 0 3cqw #fff; animation: tgt 1.1s ease-in-out infinite; }
+  .tycenter button:disabled { opacity: .3; }
+  #cb { height: 100%; max-width: 100%; aspect-ratio: 1; cursor: crosshair; touch-action: manipulation; }
+  .cfoot { display: flex; gap: 1.6cqw; height: 10cqw; flex: none; } .cfoot button { flex: 1; font-size: .9em; }
+  /* spelerskaarten */
+  .tyside { display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
+  .tcard { --accent: #2ee6a6; background: rgba(22,28,42,.78); border: 1px solid rgba(255,255,255,.1); border-left: 6px solid var(--accent); border-radius: 20px; padding: 14px 20px 12px; opacity: .55; transition: transform .3s, box-shadow .3s, opacity .3s; }
+  .tcard.active { opacity: 1; transform: translateX(-8px); box-shadow: 0 0 44px -10px var(--accent), 0 14px 40px rgba(0,0,0,.4); }
+  .ttop { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; }
+  .ttag { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: #07101a; letter-spacing: .08em; }
+  .tnow { display: none; margin-left: auto; font-size: 12px; letter-spacing: .1em; padding: 4px 12px; border-radius: 99px; background: var(--accent); color: #07101a; animation: blink 1.3s ease-in-out infinite; }
+  .tcard.active .tnow { display: inline-block; } @keyframes blink { 50% { opacity: .55; } }
+  .tpoints { font-size: 92px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; margin: 2px 0 4px; letter-spacing: -.02em; }
+  .tsub { color: #8a96ab; font-size: 15px; margin: 0 0 8px; min-height: 20px; }
+  .tthrow { display: flex; align-items: stretch; gap: 10px; margin: 4px 0; } .tpills { display: flex; gap: 8px; flex: 1; }
+  .tpill { flex: 1; min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; border-radius: 14px; background: rgba(255,255,255,.05); border: 2px dashed rgba(255,255,255,.14); color: #8a96ab; min-width: 0; }
+  .tpill b { font-size: 26px; font-weight: 800; } .tpill span { font-size: 14px; opacity: .8; margin-top: 3px; }
+  .tpill.on { background: var(--accent); border-style: solid; border-color: transparent; color: #07101a; animation: pop .35s ease-out; }
+  .ttotal { min-width: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 14px; background: rgba(0,0,0,.3); border: 2px solid var(--accent); padding: 4px 10px; }
+  .ttotal b { font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; } .ttotal span { font-size: 12px; color: #8a96ab; text-transform: uppercase; letter-spacing: .06em; text-align: center; margin-top: 2px; }
+  .tnext { font-size: 16px; min-height: 22px; margin: 6px 0 0; color: #dfe7f3; } .tnext b { color: var(--accent); }
+  .tstats { display: flex; margin-top: 8px; font-size: 12px; color: #8a96ab; text-transform: uppercase; letter-spacing: .06em; } .tstats div { flex: 1; } .tstats b { display: block; font-size: 22px; color: #f1f5fb; letter-spacing: 0; }
+  .tmini { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 14px; background: rgba(22,28,42,.78); border: 1px solid rgba(255,255,255,.1); border-left: 5px solid var(--accent); opacity: .88; font-size: 20px; }
+  .tmini .mn { font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .tmini .mv { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; } .tmini .mex { font-size: 14px; color: #8a96ab; }
+  .tmini.dead { opacity: .35; filter: grayscale(1); }
+  .tyside.many .tcard { padding: 10px 18px 8px; } .tyside.many .tpoints { font-size: 64px; margin: 0; } .tyside.many .tpill { min-height: 48px; } .tyside.many .tpill b { font-size: 20px; } .tyside.many .ttotal b { font-size: 34px; } .tyside.many .tstats { display: none; }
+  @media (max-width: 900px) {                                                /* telefoon / staand: bord bovenaan, daaronder de kaarten */
+    .tyapp { grid-template-columns: 1fr; gap: 12px; min-height: 0; } .tystage { padding-top: 52px; } .boardwrap { width: 100%; }
+    .tyside { flex-direction: row; flex-wrap: wrap; } .tcard { flex: 1 1 100%; transform: none !important; } .tmini { flex: 1 1 calc(50% - 10px); min-width: 0; font-size: 16px; } .tmini .mv { font-size: 22px; }
+    .tpoints { font-size: 64px; } .tcard.active { transform: none; }
+  }
+  @media (max-width: 640px) {
+    .boardwrap { aspect-ratio: auto; } .boardwrap > svg { height: auto; aspect-ratio: 1; }                                                /* heel smal: de bediening onder het bord, dan zijn de knoppen groot genoeg */
+    .tycenter { position: static; width: 100%; height: auto; margin-top: 10px; background: rgba(22,28,42,.78); border-radius: 18px; } .cin { height: auto; font-size: 4.2cqw; }
+    .cmid.pad { flex: none; } .cnums { grid-template-rows: repeat(5, 11.5cqw); } #cb { width: 100%; height: auto; }
+    .tturn { font-size: 14px; padding: 5px 12px; }
+  }
+  .misbox { --tc: #fff; background: rgba(10,14,22,.92); border: 3px solid var(--tc); border-radius: 28px; padding: 22px 26px; text-align: center; font-size: clamp(30px, 5.2vw, 66px); font-weight: 800; line-height: 1.12; box-shadow: 0 0 46px -10px var(--tc); min-height: 38vh; display: flex; flex-direction: column; justify-content: center; }
+  .misbox small { display: block; font-size: 16px; color: #8a96ab; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; } .misbox em { display: block; font-style: normal; font-size: 16px; font-weight: 500; color: #8a96ab; margin-top: 14px; }
+  .misact { display: flex; gap: 14px; margin-top: 14px; } .misact button { flex: 1; } .misbar { display: flex; justify-content: space-between; margin-top: 8px; }
+  .mis-dots { display: flex; gap: 6px; margin: 2px 0 8px; flex-wrap: wrap; } .mis-dots i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.14); } .mis-dots i.y { background: #2ee6a6; box-shadow: 0 0 6px #2ee6a6; } .mis-dots i.n { background: #ff4d5e; }
+  .tmini .mis-dots { margin: 0; gap: 3px; } .tmini .mis-dots i { width: 8px; height: 8px; }
+  .kwrap { width: min(100%, calc(100vh - 200px)); aspect-ratio: 1; margin: 0 auto; filter: drop-shadow(0 20px 50px rgba(0,0,0,.6)); } .kwrap.small { width: min(100%, calc(100vh - 470px)); min-width: 260px; }
+  .kwrap svg { display: block; width: 100%; height: 100%; cursor: crosshair; }
+  .tycenter.kpadc { position: static; width: 100%; height: auto; margin-top: 10px; background: rgba(22,28,42,.78); border-radius: 18px; max-width: 760px; margin-left: auto; margin-right: auto; } .kpadc .cin { height: auto; font-size: 3.4cqw; } .kpadc .cnums { grid-template-rows: repeat(5, 8cqw); }
+  .kl-row { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; } .kl-row.dead { opacity: .3; filter: grayscale(1); } .kl-row svg { overflow: visible; }
+  .skull-on { filter: drop-shadow(0 0 4px #ff4d5e); animation: skullp 1.4s ease-in-out infinite; } @keyframes skullp { 50% { filter: drop-shadow(0 0 10px #ff4d5e); } }
+  .tcard.dead { opacity: .35; filter: grayscale(1); }
+  .tytools button.big { width: auto; }
+  .misact button.big { border-radius: 99px; font-size: 24px; } .misact button.go { color: #05140d; }
+  @media (max-width: 520px) { body { font-size: 16px; } .mission { padding: 18px 14px; } .toast { font-size: 24px; } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<script>window.GAMESHOT_URI="data:audio/mpeg;base64,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"||undefined;</script>
+<script>
+// Gedeelde bibliotheek voor de overlay en de iPad-versie van Missie: bordmaten, plek -> vak, en alle opdrachten met hun kansberekening.
+// (Geen afhankelijkheid van Autodarts of de rest van de overlay.) Verwacht een globale variabele SEED.
+const ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
+const R = { bullIn: 6.35, bullOut: 15.9, triIn: 99, triOut: 107, dblIn: 162, dblOut: 170 };
+
+const pol = (r, deg) => { const a = deg * Math.PI / 180; return [r * Math.sin(a), -r * Math.cos(a)]; };
+
+function hitFromMM(X, Y) {            // X rechts, Y omhoog, in mm
+  const r = Math.hypot(X, Y);
+  if (r > R.dblOut) return { num: 0, mult: 0, r };
+  if (r <= R.bullIn) return { num: 25, mult: 2, r };
+  if (r <= R.bullOut) return { num: 25, mult: 1, r };
+  const deg = (Math.atan2(X, Y) * 180 / Math.PI + 360 + 9) % 360;
+  const num = ORDER[Math.floor(deg / 18)];
+  const mult = r >= R.dblIn ? 2 : (r >= R.triIn && r <= R.triOut) ? 3 : 1;
+  return { num, mult, r };
+}
+
+function segCenter(num, mult) {                                  // plek in mm (y omhoog) in het midden van het geraakte vak; voor darts zonder echte coördinaten (bijv. de bot)
+  if (num === 25) return mult === 2 ? [0, 0] : [0, 11];
+  const i = ORDER.indexOf(num); if (i < 0) return null;
+  const [x, y] = pol(mult === 3 ? 103 : mult === 2 ? 166 : 130, i * 18);
+  return [x, -y];
+}
+
+const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+const shuffleSeeded = (arr, seed) => { const r = rng(seed); for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+
+// =====================================================================
+//  Missie: elke beurt een willekeurige opdracht met je drie pijlen. Je haalt hem helemaal of niet. Wie na X rondes de meeste haalde, wint.
+//  - Elke opdracht komt uit een sjabloon met willekeurige waarden. Per speler komt elk sjabloon eerst één keer langs voordat er een herhaling is.
+//  - De moeilijkheid hangt af van het gemiddelde dat je opgaf: de computer simuleert een speler met dat gemiddelde en bepaalt per opdracht de kans
+//    dat hij gehaald wordt. Alleen opdrachten met een redelijke kans worden gekozen (dus geen "gooi 140+" bij een gemiddelde van 45).
+//  - Posities en plaatjes gebruiken de coördinaten van de camera; voor de bot (zonder echte coördinaten) worden die opdrachten overgeslagen.
+// =====================================================================
+const COLS = ['zwart', 'wit', 'rood', 'groen'], COLE = { zwart: '⚫', wit: '⚪', rood: '🔴', groen: '🟢', mis: '✖' };
+const EMOJIS = ['⭐', '❤️', '🍕', '🐶', '🍀', '🍩', '🚀', '🎈', '🔔', '🍒', '🦄', '🐸', '🍔', '⚡', '🌙', '🎁', '🐝', '🍎'];
+const mSum = ds => ds.reduce((a, d) => a + d.value, 0);
+const r5 = x => Math.max(5, Math.round(x / 5) * 5);
+const pk = (r, a) => a[Math.floor(r() * a.length)];
+const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+const hashStr = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const mColor = (num, mult) => num === 0 || mult === 0 ? 'mis' : num === 25 ? (mult === 2 ? 'rood' : 'groen') : (ORDER.indexOf(num) % 2 === 0 ? (mult === 1 ? 'zwart' : 'rood') : (mult === 1 ? 'wit' : 'groen'));
+const ringOf = r => r <= 6.35 ? 'bull' : r <= 15.9 ? 'obull' : r <= 99 ? 'in' : r <= 107 ? 'tri' : r <= 162 ? 'out' : r <= 170 ? 'dbl' : 'miss';
+function mkDartAt(x, y) { const h = hitFromMM(x, y); return { x, y, r: h.r, num: h.num, mult: h.mult, value: h.num * h.mult, color: mColor(h.num, h.mult), ring: ringOf(h.r) }; }
+function realDart(d) {                                           // een echte pijl in het formaat van de opdrachten (platte gegevens)
+  const [x, y] = d.mm || [0, 0], r = Math.hypot(x, y);
+  return { x, y, r, num: d.num, mult: d.mult, value: d.value, color: mColor(d.num, d.mult), ring: ringOf(r), syn: !!d.synthetic };
+}
+const gauss = rn => { let u = 0, v = 0; while (!u) u = rn(); while (!v) v = rn(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+const sigCache = new Map();
+function sigmaFor(avg) {                                         // hoe breed spreidt een speler met dit gemiddelde (mm), gemikt op de triple 20
+  if (sigCache.has(avg)) return sigCache.get(avg);
+  let lo = 4, hi = 150;
+  const meanAt = s => { const r = rng(777); let t = 0; const n = 1200; for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) t += mkDartAt(s * gauss(r), 103 + s * gauss(r)).value; return t / n; };
+  for (let it = 0; it < 13; it++) { const mid = (lo + hi) / 2; if (meanAt(mid) > avg) lo = mid; else hi = mid; }
+  const s = (lo + hi) / 2; sigCache.set(avg, s); return s;
+}
+function passProb(inst, avg, key) {                              // simulatie: hoe vaak haalt een speler met dit gemiddelde deze opdracht?
+  const s = sigmaFor(avg), r = rng(hashStr(key)), N = 280; let ok = 0;
+  for (let i = 0; i < N; i++) {
+    const ds = [];
+    for (let k = 0; k < 3; k++) { const a = inst.aim ? inst.aim(k, ds) : [0, 103]; ds.push(mkDartAt(a[0] + s * gauss(r), a[1] + s * gauss(r))); }
+    if (inst.check(ds)) ok++;
+  }
+  return ok / N;
+}
+const numAim = n => n === 25 ? [0, 0] : segCenter(n, 1);
+const full = f => ds => ds.length === 3 && f(ds);
+const cnt = (ds, f) => ds.filter(f).length;
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19];
+const imgMasks = new Map();                                      // plaatjes uit de map mission-images: doorzichtige delen tellen niet mee
+function imgMask(url) {
+  if (imgMasks.has(url)) return imgMasks.get(url);
+  const m = { ready: false }; imgMasks.set(url, m);
+  const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, 96, 96); m.data = x.getImageData(0, 0, 96, 96).data; m.ready = true; }; im.src = url;
+  return m;
+}
+function hitTarget(d, t) {
+  if (!d.x && !d.y && d.r === 0) return false;
+  if (d.syn) return false;
+  if (t.img) {
+    const m = imgMask(t.img), dx = d.x - t.x, dy = d.y - t.y, half = t.r;
+    if (Math.abs(dx) > half || Math.abs(dy) > half) return false;
+    if (!m.ready) return Math.hypot(dx, dy) <= half * .72;
+    const px = Math.floor((dx / (2 * half) + .5) * 96), py = Math.floor((-dy / (2 * half) + .5) * 96);
+    return m.data[(py * 96 + px) * 4 + 3] > 40;
+  }
+  return Math.hypot(d.x - t.x, d.y - t.y) <= t.r;
+}
+const hitsAll = (ds, ts) => { const used = new Set(); const rec = i => { if (i === ts.length) return true; for (let k = 0; k < ds.length; k++) if (!used.has(k) && hitTarget(ds[k], ts[i])) { used.add(k); if (rec(i + 1)) return true; used.delete(k); } return false; }; return rec(0); };
+
+const MT = [], MT_BY_ID = {};
+const WILD = ['exact', 'square', 'double', 'consec'];             // deze mogen een kleine kans hebben ("precies 42" is een leuke gok); de rest moet echt goed te doen zijn
+function T(id, w, draw, make, o = {}) { const t = { id, w, draw, make, lo: WILD.includes(id) ? Math.min(o.lo ?? .12, .03) : Math.max(o.lo ?? .12, .08), hi: o.hi ?? .66, need: o.need }; MT.push(t); MT_BY_ID[id] = t; }
+const ctxCoords = c => c.coords;
+
+// ---- totaalscore
+T('min', 3, (r, A) => ({ X: r5(A * (.85 + r() * .5)) }), P => ({ text: `Gooi minstens ${P.X}`, check: ds => mSum(ds) >= P.X }));
+T('max', 2, (r, A) => ({ X: r5(A * (.4 + r() * .3)) }), P => ({ text: `Gooi maximaal ${P.X}`, check: full(ds => mSum(ds) <= P.X) }));
+T('exact', 1, (r, A) => ({ N: Math.max(7, Math.round(A * (.6 + r() * .8))) }), P => ({ text: `Gooi precies ${P.N}`, check: full(ds => mSum(ds) === P.N) }), { lo: .018 });
+T('range', 2, (r, A) => { const lo = r5(A * (.65 + r() * .25)); return { lo, hi: lo + r5(Math.max(10, A * .3)) }; }, P => ({ text: `Gooi tussen ${P.lo} en ${P.hi}`, check: full(ds => mSum(ds) >= P.lo && mSum(ds) <= P.hi) }));
+T('even', 1, () => ({}), () => ({ text: 'Een even totaal (en minstens 1 punt)', check: full(ds => mSum(ds) > 0 && mSum(ds) % 2 === 0) }), { lo: .2 });
+T('odd', 1, () => ({}), () => ({ text: 'Een oneven totaal', check: full(ds => mSum(ds) % 2 === 1) }), { lo: .2 });
+T('div', 2, r => ({ d: pk(r, [3, 4, 5, 6, 7, 9]) }), P => ({ text: `Een totaal dat deelbaar is door ${P.d}`, check: full(ds => mSum(ds) > 0 && mSum(ds) % P.d === 0) }), { lo: .1 });
+T('ends', 1, r => { const a = ri(r, 0, 9); let b = ri(r, 0, 9); if (b === a) b = (a + 5) % 10; return { a, b }; }, P => ({ text: `Een totaal dat eindigt op een ${P.a} of een ${P.b}`, check: full(ds => [P.a, P.b].includes(mSum(ds) % 10)) }), { lo: .15 });
+T('prime', 1, () => ({}), () => ({ text: 'Een totaal dat een priemgetal is', check: full(ds => PRIMES.includes(mSum(ds)) || [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113].includes(mSum(ds))) }), { lo: .06 });
+T('square', 1, () => ({}), () => ({ text: 'Een totaal van 16, 25, 36, 49, 64 of 81', check: full(ds => [16, 25, 36, 49, 64, 81].includes(mSum(ds))) }), { lo: .03 });
+T('double', 1, () => ({}), () => ({ text: 'Een totaal met twee gelijke cijfers (11, 22, 33...)', check: full(ds => mSum(ds) >= 11 && mSum(ds) % 11 === 0 && mSum(ds) < 100) }), { lo: .03 });
+T('digit', 1, r => ({ d: ri(r, 1, 9) }), P => ({ text: `Een totaal met een ${P.d} erin`, check: full(ds => String(mSum(ds)).includes(String(P.d))) }), { lo: .08 });
+T('beatPrev', 2, () => ({}), (P) => ({ text: `Gooi meer dan je vorige beurt (${P.T})`, check: full(ds => mSum(ds) > P.T) }), { need: c => c.prev !== undefined });
+T('lessPrev', 1, () => ({}), (P) => ({ text: `Gooi minder dan je vorige beurt (${P.T})`, check: full(ds => mSum(ds) < P.T) }), { need: c => c.prev !== undefined && c.prev > 12 });
+T('nearPrev', 1, () => ({}), (P) => ({ text: `Gooi binnen 5 punten van je vorige beurt (${P.T})`, check: full(ds => Math.abs(mSum(ds) - P.T) <= 5) }), { need: c => c.prev !== undefined, lo: .08 });
+T('beatOther', 2, () => ({}), (P) => ({ text: `Gooi meer dan ${P.name} (${P.T})`, check: full(ds => mSum(ds) > P.T) }), { need: c => c.other !== undefined });
+T('allMin', 2, (r, A) => ({ V: r5(A / 3 * (.55 + r() * .5)) }), P => ({ text: `Elke pijl minstens ${P.V} punten`, check: full(ds => ds.every(d => d.value >= P.V)), perDart: d => d.value >= P.V }));
+T('allMax', 2, (r, A) => ({ V: r5(A / 3 * (.9 + r() * .8)) }), P => ({ text: `Elke pijl hoogstens ${P.V} punten`, check: full(ds => ds.every(d => d.value <= P.V)), perDart: d => d.value <= P.V }));
+T('oneBig', 2, (r, A) => ({ V: r5(A * (.5 + r() * .4)) }), P => ({ text: `Minstens één pijl van ${P.V} of meer`, check: ds => ds.some(d => d.value >= P.V) }));
+T('noMiss', 1, () => ({}), () => ({ text: 'Alle drie op het bord (geen mis)', check: full(ds => ds.every(d => d.num > 0)), perDart: d => d.num > 0 }), { lo: .3, hi: .95 });
+T('firstLast', 1, (r, A) => ({ a: r5(A / 3 * (1 + r() * .6)), b: r5(A / 3 * (.5 + r() * .4)) }), P => ({ text: `Eerste pijl minstens ${P.a}, laatste pijl hoogstens ${P.b}`, check: full(ds => ds[0].value >= P.a && ds[2].value <= P.b) }), { lo: .08 });
+T('equalPair', 1, () => ({}), () => ({ text: 'Twee pijlen met dezelfde waarde', check: full(ds => ds[0].value === ds[1].value || ds[1].value === ds[2].value || ds[0].value === ds[2].value) }), { lo: .08 });
+T('allDiff', 1, () => ({}), () => ({ text: 'Drie pijlen met een verschillende waarde', check: full(ds => new Set(ds.map(d => d.value)).size === 3) }), { lo: .15, hi: .95 });
+T('valAsc', 1, () => ({}), () => ({ text: 'Elke pijl scoort meer dan de vorige', check: full(ds => ds[0].value < ds[1].value && ds[1].value < ds[2].value), perDart: (d, i, ds) => i === 0 ? true : d.value > ds[i - 1].value }), { lo: .08 });
+
+// ---- kleuren
+T('c3', 3, r => ({ c: pk(r, COLS) }), P => ({ text: `3× ${COLE[P.c]} ${P.c} vlak`, check: full(ds => ds.every(d => d.color === P.c)), perDart: d => d.color === P.c }), { lo: .05 });
+T('cmix', 3, r => { const c = COLS.slice(); c.splice(ri(r, 0, 3), 1); return { cs: c }; }, P => ({ text: `1× ${COLE[P.cs[0]]} ${P.cs[0]}, 1× ${COLE[P.cs[1]]} ${P.cs[1]}, 1× ${COLE[P.cs[2]]} ${P.cs[2]}`, check: full(ds => P.cs.every(c => ds.some(d => d.color === c))), perDart: d => P.cs.includes(d.color) }), { lo: .04 });
+T('c21', 2, r => { const a = pk(r, COLS); let b = pk(r, COLS); if (b === a) b = COLS[(COLS.indexOf(a) + 1) % 4]; return { a, b }; }, P => ({ text: `2× ${COLE[P.a]} ${P.a} en 1× ${COLE[P.b]} ${P.b}`, check: full(ds => cnt(ds, d => d.color === P.a) === 2 && cnt(ds, d => d.color === P.b) === 1) }), { lo: .04 });
+T('cat', 2, r => { const c = pk(r, COLS); return { c, n: (c === 'zwart' || c === 'wit') ? 2 : 1 }; }, P => ({ text: `Minstens ${P.n}× ${COLE[P.c]} ${P.c}`, check: ds => cnt(ds, d => d.color === P.c) >= P.n }));
+T('conly', 1, () => ({}), () => ({ text: 'Alleen ⚫ zwart en ⚪ wit (geen rood of groen)', check: full(ds => ds.every(d => d.color === 'zwart' || d.color === 'wit')), perDart: d => d.color === 'zwart' || d.color === 'wit' }), { lo: .1 });
+T('csame', 2, () => ({}), () => ({ text: 'Drie keer dezelfde kleur', check: full(ds => ds[0].color !== 'mis' && ds.every(d => d.color === ds[0].color)) }), { lo: .08 });
+T('cdiff', 2, () => ({}), () => ({ text: 'Drie verschillende kleuren', check: full(ds => new Set(ds.map(d => d.color)).size === 3 && !ds.some(d => d.color === 'mis')) }), { lo: .06 });
+T('cseq', 1, r => ({ s: [pk(r, COLS), pk(r, COLS), pk(r, COLS)] }), P => ({ text: `Kleuren in deze volgorde: ${P.s.map(c => COLE[c]).join(' ')}`, check: full(ds => ds.every((d, i) => d.color === P.s[i])), perDart: (d, i) => d.color === P.s[i] }), { lo: .02 });
+T('cnone', 2, r => ({ c: pk(r, COLS) }), P => ({ text: `Geen enkel ${COLE[P.c]} ${P.c} vlak`, check: full(ds => ds.every(d => d.color !== P.c)), perDart: d => d.color !== P.c }), { lo: .25, hi: .9 });
+
+// ---- ringen
+T('dbl1', 2, () => ({}), () => ({ text: 'Minstens 1 dubbel', check: ds => ds.some(d => d.mult >= 2 && d.num > 0) }));
+T('dbl2', 1, () => ({}), () => ({ text: 'Minstens 2 dubbels', check: ds => cnt(ds, d => d.mult >= 2 && d.num > 0) >= 2 }), { lo: .04 });
+T('trp1', 1, () => ({}), () => ({ text: 'Minstens 1 triple', check: ds => ds.some(d => d.mult === 3) }), { lo: .08 });
+T('sgl', 2, () => ({}), () => ({ text: 'Alleen singles (geen dubbel of triple)', check: full(ds => ds.every(d => d.mult === 1 && d.num > 0)), perDart: d => d.mult === 1 && d.num > 0 }), { lo: .1 });
+T('dbltrp', 1, () => ({}), () => ({ text: 'Een dubbel én een triple', check: full(ds => ds.some(d => d.mult === 2 && d.num > 0) && ds.some(d => d.mult === 3)) }), { lo: .02 });
+T('dbl1x', 1, () => ({}), () => ({ text: 'Precies 1 dubbel', check: full(ds => cnt(ds, d => d.mult === 2 && d.num > 0) === 1) }), { lo: .08 });
+T('bull', 1, () => ({}), () => ({ text: 'Raak de bull (25 of 50)', check: ds => ds.some(d => d.num === 25), aim: () => [0, 0] }), { lo: .04 });
+T('bull50', 1, () => ({}), () => ({ text: 'Raak de rode bull (50)', check: ds => ds.some(d => d.num === 25 && d.mult === 2), aim: () => [0, 0] }), { lo: .03 });
+T('inner', 1, () => ({}), () => ({ text: 'Alle drie binnen de triple-ring', check: full(ds => ds.every(d => d.r <= 107)), perDart: d => d.r <= 107 }), { need: ctxCoords, lo: .06 });
+T('outer', 1, () => ({}), () => ({ text: 'Alle drie in het buitenste vlak (tussen triple en dubbel)', check: full(ds => ds.every(d => d.r > 107 && d.r <= 162)), perDart: d => d.r > 107 && d.r <= 162 }), { need: ctxCoords, lo: .06 });
+
+// ---- getallen
+T('nums3', 3, r => ({ i: ri(r, 0, 19) }), P => { const n = [ORDER[P.i], ORDER[(P.i + 1) % 20], ORDER[(P.i + 2) % 20]]; return { text: `Raak de ${n[0]}, de ${n[1]} en de ${n[2]}`, check: full(ds => n.every(x => ds.some(d => d.num === x))), perDart: d => n.includes(d.num), aim: k => numAim(n[k]) }; }, { lo: .02 });
+T('nums2', 2, r => { const a = ri(r, 1, 20); let b = ri(r, 1, 20); if (b === a) b = a % 20 + 1; return { a, b }; }, P => ({ text: `Raak de ${P.a} en de ${P.b}`, check: ds => ds.some(d => d.num === P.a) && ds.some(d => d.num === P.b), aim: k => k === 0 ? numAim(P.a) : k === 1 ? numAim(P.b) : [0, 103] }), { lo: .04 });
+T('numAny', 2, () => ({}), () => ({ text: 'Drie verschillende getallen', check: full(ds => ds.every(d => d.num > 0) && new Set(ds.map(d => d.num)).size === 3) }), { lo: .2, hi: .95 });
+T('numSame', 1, () => ({}), () => ({ text: 'Drie keer hetzelfde getal', check: full(ds => ds[0].num > 0 && ds.every(d => d.num === ds[0].num)) }), { lo: .03 });
+T('asc', 2, () => ({}), () => ({ text: 'Elke pijl een hoger getal dan de vorige', check: full(ds => ds.every(d => d.num > 0) && ds[0].num < ds[1].num && ds[1].num < ds[2].num), perDart: (d, i, ds) => d.num > 0 && (i === 0 || d.num > ds[i - 1].num), aim: k => numAim([3, 12, 20][k]) }), { lo: .04 });
+T('desc', 2, () => ({}), () => ({ text: 'Elke pijl een lager getal dan de vorige', check: full(ds => ds.every(d => d.num > 0) && ds[0].num > ds[1].num && ds[1].num > ds[2].num), perDart: (d, i, ds) => d.num > 0 && (i === 0 || d.num < ds[i - 1].num), aim: k => numAim([20, 12, 3][k]) }), { lo: .04 });
+T('alt', 1, r => ({ even: r() < .5 }), P => ({ text: P.even ? 'Even, oneven, even' : 'Oneven, even, oneven', check: full(ds => ds.every((d, i) => d.num > 0 && (d.num % 2 === 0) === ((i % 2 === 0) === P.even))), perDart: (d, i) => d.num > 0 && (d.num % 2 === 0) === ((i % 2 === 0) === P.even) }), { lo: .05 });
+T('allEven', 2, () => ({}), () => ({ text: 'Drie even getallen', check: full(ds => ds.every(d => d.num > 0 && d.num % 2 === 0)), perDart: d => d.num > 0 && d.num % 2 === 0 }), { lo: .05 });
+T('allOdd', 2, () => ({}), () => ({ text: 'Drie oneven getallen', check: full(ds => ds.every(d => d.num % 2 === 1)), perDart: d => d.num % 2 === 1, aim: () => numAim(5) }), { lo: .05 });
+T('low', 1, () => ({}), () => ({ text: 'Drie getallen van 1 t/m 10', check: full(ds => ds.every(d => d.num >= 1 && d.num <= 10)), perDart: d => d.num >= 1 && d.num <= 10, aim: () => numAim(6) }), { lo: .05 });
+T('high', 1, () => ({}), () => ({ text: 'Drie getallen van 11 t/m 20', check: full(ds => ds.every(d => d.num >= 11 && d.num <= 20)), perDart: d => d.num >= 11 && d.num <= 20 }), { lo: .08 });
+T('prime3', 2, () => ({}), () => ({ text: 'Drie priemgetallen (2, 3, 5, 7, 11, 13, 17, 19)', check: full(ds => ds.every(d => PRIMES.includes(d.num))), perDart: d => PRIMES.includes(d.num), aim: () => numAim(17) }), { lo: .03 });
+T('mult', 2, r => ({ m: pk(r, [3, 4, 5]) }), P => ({ text: `Drie veelvouden van ${P.m}`, check: full(ds => ds.every(d => d.num > 0 && d.num % P.m === 0)), perDart: d => d.num > 0 && d.num % P.m === 0, aim: () => numAim(P.m === 3 ? 18 : 20) }), { lo: .04 });
+T('consec', 1, () => ({}), () => ({ text: 'Drie opeenvolgende getallen (bijvoorbeeld 7-8-9), in elke volgorde', check: full(ds => { const n = ds.map(d => d.num).sort((a, b) => a - b); return n[0] > 0 && n[1] === n[0] + 1 && n[2] === n[1] + 1; }) }), { lo: .01 });
+T('lucky', 2, r => ({ n: ri(r, 5, 20) }), P => ({ text: `Raak je geluksgetal ${P.n}`, check: ds => ds.some(d => d.num === P.n), aim: () => numAim(P.n) }));
+T('allowed', 2, r => { const s = []; while (s.length < ri(r, 5, 7)) { const n = ri(r, 1, 20); if (!s.includes(n)) s.push(n); } return { s: s.sort((a, b) => a - b) }; }, P => ({ text: `Elke pijl op één van deze getallen: ${P.s.join(', ')}`, check: full(ds => ds.every(d => P.s.includes(d.num))), perDart: d => P.s.includes(d.num), aim: k => numAim(P.s[k % P.s.length]) }), { lo: .04 });
+T('notNum', 2, r => ({ n: pk(r, [20, 19, 18, 17, 1, 5, 12]) }), P => ({ text: `Raak de ${P.n} niet`, check: full(ds => ds.every(d => d.num !== P.n)), perDart: d => d.num !== P.n }), { lo: .25, hi: .92 });
+
+// ---- positie op het bord (alleen met echte coördinaten)
+const HALF = { linker: ['M0,-170 A170,170 0 0 0 0,170 Z', d => d.x < 0], rechter: ['M0,-170 A170,170 0 0 1 0,170 Z', d => d.x > 0], bovenste: ['M-170,0 A170,170 0 0 1 170,0 Z', d => d.y > 0], onderste: ['M-170,0 A170,170 0 0 0 170,0 Z', d => d.y < 0] };
+T('half', 2, r => ({ h: pk(r, Object.keys(HALF)) }), P => ({ text: `Alle drie in de ${P.h} helft van het bord`, check: full(ds => ds.every(d => d.num > 0 && HALF[P.h][1](d))), perDart: d => d.num > 0 && HALF[P.h][1](d), shade: [HALF[P.h][0]], aim: () => P.h === 'linker' ? [-70, 0] : P.h === 'rechter' ? [70, 0] : P.h === 'bovenste' ? [0, 70] : [0, -70] }), { need: ctxCoords, lo: .04 });
+T('quad', 1, () => ({}), () => ({ text: 'Drie pijlen in drie verschillende vierde delen (kwadranten) van het bord', check: full(ds => new Set(ds.map(d => (d.x >= 0 ? 'r' : 'l') + (d.y >= 0 ? 'b' : 'o'))).size === 3), aim: k => [[50, 50], [-50, 50], [-50, -50]][k] }), { need: ctxCoords, lo: .03 });
+T('cluster', 2, (r, A, c) => ({ D: r5(c.sigma * (2.3 + r() * 1.7)) }), P => ({ text: `Alle drie binnen ${P.D / 10} cm van elkaar`, check: full(ds => dist(ds[0], ds[1]) <= P.D && dist(ds[1], ds[2]) <= P.D && dist(ds[0], ds[2]) <= P.D) }), { need: ctxCoords, lo: .05 });
+T('nearBull', 2, (r, A, c) => ({ R: r5(c.sigma * (2 + r() * 1.5)) }), P => ({ text: `Alle drie binnen ${P.R / 10} cm van de bull`, check: full(ds => ds.every(d => d.r <= P.R)), perDart: d => d.r <= P.R, aim: () => [0, 0], shade: [`M-${P.R},0 A${P.R},${P.R} 0 1 0 ${P.R},0 A${P.R},${P.R} 0 1 0 -${P.R},0 Z`] }), { need: ctxCoords, lo: .05 });
+T('farBull', 1, r => ({ R: ri(r, 12, 18) * 5 }), P => ({ text: `Alle drie minstens ${P.R / 10} cm van de bull af`, check: full(ds => ds.every(d => d.r >= P.R && d.num > 0)), perDart: d => d.r >= P.R && d.num > 0 }), { need: ctxCoords, lo: .08 });
+T('pair', 2, (r, A, c) => ({ D: r5(c.sigma * (1.1 + r() * .9)) }), P => ({ text: `Twee pijlen binnen ${P.D / 10} cm van elkaar`, check: full(ds => dist(ds[0], ds[1]) <= P.D || dist(ds[1], ds[2]) <= P.D || dist(ds[0], ds[2]) <= P.D) }), { need: ctxCoords, lo: .1 });
+T('spiralIn', 1, () => ({}), () => ({ text: 'Elke pijl dichter bij de bull dan de vorige', check: full(ds => ds[0].r > ds[1].r && ds[1].r > ds[2].r), perDart: (d, i, ds) => i === 0 || d.r < ds[i - 1].r, aim: k => [0, [130, 70, 15][k]] }), { need: ctxCoords, lo: .05 });
+T('spiralOut', 1, () => ({}), () => ({ text: 'Elke pijl verder van de bull dan de vorige', check: full(ds => ds[0].r < ds[1].r && ds[1].r < ds[2].r), perDart: (d, i, ds) => i === 0 || d.r > ds[i - 1].r, aim: k => [0, [15, 70, 130][k]] }), { need: ctxCoords, lo: .05 });
+T('band', 1, r => { const a = ri(r, 2, 8) * 10; return { a, b: a + ri(r, 3, 5) * 10 }; }, P => ({ text: `Alle drie tussen ${P.a / 10} en ${P.b / 10} cm van de bull`, check: full(ds => ds.every(d => d.r >= P.a && d.r <= P.b)), perDart: d => d.r >= P.a && d.r <= P.b, aim: () => [0, (P.a + P.b) / 2], shade: [`M-${P.b},0 A${P.b},${P.b} 0 1 0 ${P.b},0 A${P.b},${P.b} 0 1 0 -${P.b},0 Z M-${P.a},0 A${P.a},${P.a} 0 1 0 ${P.a},0 A${P.a},${P.a} 0 1 0 -${P.a},0 Z`] }), { need: ctxCoords, lo: .05 });
+
+// ---- doelen die op het bord verschijnen (sterren, plaatjes, een smiley)
+function spot(r, others = []) {                                  // een willekeurige plek op het bord, niet te dicht bij andere doelen
+  for (let k = 0; k < 40; k++) { const rr = 18 + r() * 85, an = r() * 6.283, x = rr * Math.cos(an), y = rr * Math.sin(an); if (others.every(o => Math.hypot(o.x - x, o.y - y) > 52)) return { x: Math.round(x), y: Math.round(y) }; }
+  return { x: 0, y: 0 };
+}
+const tRad = (r, c) => Math.max(15, Math.round(c.sigma * (.8 + r() * .9)));
+T('tgt1', 3, (r, A, c) => ({ e: pk(r, EMOJIS), ...spot(r), rad: tRad(r, c) }), P => ({ text: `Raak de ${P.e}`, targets: [{ e: P.e, x: P.x, y: P.y, r: P.rad }], check: ds => ds.some(d => hitTarget(d, { x: P.x, y: P.y, r: P.rad })), aim: () => [P.x, P.y] }), { need: ctxCoords, lo: .12 });
+T('tgt2', 2, (r, A, c) => { const a = spot(r), b = spot(r, [a]); let e2 = pk(r, EMOJIS); const e1 = pk(r, EMOJIS); if (e2 === e1) e2 = EMOJIS[(EMOJIS.indexOf(e1) + 1) % EMOJIS.length]; return { e1, e2, a, b, rad: tRad(r, c) }; },
+  P => { const ts = [{ e: P.e1, x: P.a.x, y: P.a.y, r: P.rad }, { e: P.e2, x: P.b.x, y: P.b.y, r: P.rad }]; return { text: `Raak de ${P.e1} én de ${P.e2}`, targets: ts, check: ds => hitsAll(ds, ts), aim: k => k === 0 ? [ts[0].x, ts[0].y] : k === 1 ? [ts[1].x, ts[1].y] : [0, 103] }; }, { need: ctxCoords, lo: .06 });
+T('tgt3', 1, (r, A, c) => { const a = spot(r), b = spot(r, [a]), d = spot(r, [a, b]); return { es: [pk(r, EMOJIS), pk(r, EMOJIS), pk(r, EMOJIS)], ps: [a, b, d], rad: tRad(r, c) }; },
+  P => { const ts = P.ps.map((p, i) => ({ e: P.es[i], x: p.x, y: p.y, r: P.rad })); return { text: `Raak alle drie: ${P.es.join(' ')}`, targets: ts, check: full(ds => hitsAll(ds, ts)), aim: k => [ts[k].x, ts[k].y] }; }, { need: ctxCoords, lo: .03 });
+T('tgt2of3', 2, (r, A, c) => ({ e: pk(r, EMOJIS), ...spot(r), rad: tRad(r, c) }), P => ({ text: `Raak de ${P.e} met minstens 2 pijlen`, targets: [{ e: P.e, x: P.x, y: P.y, r: P.rad }], check: ds => cnt(ds, d => hitTarget(d, { x: P.x, y: P.y, r: P.rad })) >= 2, aim: () => [P.x, P.y] }), { need: ctxCoords, lo: .05 });
+T('smiley', 1, (r, A, c) => ({ ...spot(r), rad: Math.max(13, Math.round(c.sigma * (.7 + r() * .6))) }),
+  P => { const ts = [{ e: '', x: P.x - 28, y: P.y + 22, r: P.rad }, { e: '', x: P.x + 28, y: P.y + 22, r: P.rad }, { e: '', x: P.x, y: P.y - 26, r: P.rad }];
+    return { text: '😀 Raak beide ogen en de mond', targets: ts, check: full(ds => hitsAll(ds, ts)), aim: k => [ts[k].x, ts[k].y],
+      decor: grp => { svg('circle', { cx: P.x, cy: -P.y, r: 62, fill: 'rgba(255,214,10,.18)', stroke: '#ffd60a', 'stroke-width': 2.5 }, grp); } }; }, { need: ctxCoords, lo: .02 });
+T('photo', 3, (r, A, c) => ({ url: pk(r, c.images), ...spot(r), half: Math.max(30, Math.round(c.sigma * (1.5 + r()))) }),
+  P => { const t = { img: P.url, x: P.x, y: P.y, r: P.half }; return { text: 'Raak het plaatje', targets: [t], check: ds => ds.some(d => hitTarget(d, t)), aim: () => [P.x, P.y], sim: (ds) => ds.some(d => Math.hypot(d.x - P.x, d.y - P.y) <= P.half * .72) }; }, { need: c => c.coords && c.images.length > 0, lo: .12 });
+
+
+// Kies een opdracht voor "houder" h (een speler of een team): { idx, g: { ptr, round }, team? } met context c (zie missionCtx).
+// Vast per zaad (SEED), speler en ronde, dus herhaalbaar. Elk sjabloon komt eerst één keer langs voordat er een herhaling is.
+function pickMission(h, c) {
+  const g = h.g, order = shuffleSeeded(MT.map(t => t.id), SEED * 31 + ((h.idx || 0) + 1) * 977);
+  for (let n = 0; n < order.length; n++) {
+    const t = MT_BY_ID[order[(g.ptr + n) % order.length]];
+    if (t.need && !t.need(c)) continue;
+    for (let a = 0; a < 5; a++) {
+      const r = rng(hashStr(`${SEED}|${h.idx || 0}|${g.round}|${t.id}|${a}`));
+      const P = t.draw(r, c.A, c);
+      if (t.id === 'beatPrev' || t.id === 'lessPrev' || t.id === 'nearPrev') P.T = c.prev;
+      if (t.id === 'beatOther') { P.T = c.other; P.name = c.otherName; }
+      const inst = t.make(P, c), sim = { check: inst.sim || inst.check, aim: inst.aim };
+      const pr = passProb(sim, c.A, `${t.id}|${JSON.stringify(P)}`);
+      if (pr >= (h.team ? Math.max(t.lo, .3) : t.lo) && pr <= (h.team ? .88 : t.hi)) { g.ptr = (g.ptr + n + 1) % order.length; return { tpl: t.id, P, pr: Math.round(pr * 100) }; }
+    }
+  }
+  return { tpl: 'min', P: { X: r5(c.A * .9) }, pr: 50 };        // vangnet: een gewone score-opdracht
+}
+
+</script>
+<script>
+// Darts Party: Missie, Killer en Monopoly (Tycoon) zonder Autodarts. De pijlen tik je zelf in. Eén los bestand, werkt offline.
+const KEY = 'darts-party-v1';
+const PAL = ['#2ee6a6', '#ffb02e', '#5aa9ff', '#ff6bd6', '#b78bff', '#ffd84d'];      // dezelfde kleuren als de overlay
+const LEVELS = [[25, 'Beginner'], [35, 'Recreatief'], [45, 'Gemiddeld'], [60, 'Gevorderd'], [80, 'Goed'], [100, 'Pro']];
+const GAMESHOT = window.GAMESHOT_URI || 'game_shot.wav';
+let SEED = 1;                                                  // dart-lib.js leest deze variabele
+let S = null, hist = [], view = 'hub';
+let setups = {
+  mission: { players: [{ name: '', avg: 45 }, { name: '', avg: 45 }], rounds: 10, teams: 0 },
+  killer: { players: [{ name: '' }, { name: '' }], hard: false },
+  tycoon: { players: [{ name: '' }, { name: '' }], rounds: 12 },
+};
+const $ = s => document.querySelector(s), app = $('#app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const col = i => PAL[i % PAL.length];
+let mult = 1;                                                  // gekozen vermenigvuldiger voor de volgende pijl
+
+try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { if (o.setups) for (const k in setups) if (o.setups[k]) setups[k] = o.setups[k]; if (o.S && !o.S.over) { S = o.S; hist = o.hist || []; SEED = S.seed; } } } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ setups, S, hist })); } catch (e) {} };
+
+// ---------- geluid ----------
+let AC = null, shotBuf = null;
+function audio() { try { if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); fetch(GAMESHOT).then(r => r.arrayBuffer()).then(b => AC.decodeAudioData(b)).then(b => { shotBuf = b; }).catch(() => {}); } if (AC.state === 'suspended') AC.resume(); } catch (e) {} return AC; }
+function tone(f, t0, d, type, v) { const a = AC; if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t0 + d); o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + d + .05); }
+function sound(kind) {                                          // 'ok' | 'bad' | 'tick' | 'big'
+  if (!audio()) return;
+  if (kind === 'tick') tone(660, 0, .06, 'square', .06);
+  else if (kind === 'ok') [523, 659, 784].forEach((f, i) => tone(f, i * .08, .3, 'triangle', .22));
+  else if (kind === 'big') { if (shotBuf) { const s = AC.createBufferSource(); s.buffer = shotBuf; s.connect(AC.destination); s.start(); } else [523, 659, 784, 1046].forEach((f, i) => tone(f, i * .09, .35, 'triangle', .25)); }
+  else { tone(196, 0, .35, 'sawtooth', .16); tone(139, .18, .5, 'sawtooth', .16); }
+}
+let toastT = 0;
+function toast(t, kind, ms) { const el = $('#toast'); el.textContent = t; el.className = 'toast show ' + (kind || 'info'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms || 1100); }
+
+// ---------- gedeeld ----------
+const dartTxt = d => d.num === 0 ? 'mis' : d.num === 25 ? (d.mult === 2 ? 'DBull' : 'Bull') : ['', '', 'D', 'T'][d.mult] + d.num;
+const pName = i => S.players[i].name;
+function clean(list, withAvg) { return list.map((p, i) => ({ name: (p.name || '').trim().slice(0, 16) || 'Speler ' + (i + 1), avg: withAvg ? Number(p.avg) || 45 : undefined })); }
+function snap() { hist.push(JSON.stringify(S)); if (hist.length > 80) hist.shift(); }
+function undo() { if (!hist.length) return; S = JSON.parse(hist.pop()); SEED = S.seed; mult = 1; save(); render(); }
+const quit = () => { if (confirm('Spel stoppen en terug naar het begin?')) { S = null; hist = []; view = 'hub'; save(); render(); } };
+
+// ---------- MISSIE ----------
+const mTeamOf = i => i % S.teams;
+const mHolder = pi => S.teams ? S.holders[mTeamOf(pi)] : S.holders[pi];
+const mCtx = h => { const A = Math.max(15, Math.min(140, h.avg)); return { A, sigma: sigmaFor(A), prev: undefined, other: undefined, otherName: '', coords: false, images: [] }; };
+function mNew(h) { SEED = S.seed; h.mission = pickMission({ idx: h.idx, g: h.g, team: !!S.teams }, mCtx(h)); }
+const mText = h => MT_BY_ID[h.mission.tpl].make(h.mission.P, mCtx(h)).text;
+const mDone = h => h.g.round >= S.rounds;
+function startMission() {
+  const cfg = setups.mission, ps = clean(cfg.players, true), teams = cfg.teams >= 2 && ps.length >= cfg.teams ? cfg.teams : 0;
+  const mk = (idx, name, short, avg, members) => ({ idx, name, short, avg, members, g: { ptr: 0, round: 0 }, done: 0, hist: [], got: [], mission: null });
+  const holders = teams ? Array.from({ length: teams }, (_, t) => { const ms = ps.map((p, i) => ({ ...p, i })).filter(p => p.i % teams === t); return mk(t, 'Team ' + (t + 1) + ' (' + ms.map(m => m.name).join(' & ') + ')', 'Team ' + (t + 1), Math.round(ms.reduce((a, m) => a + m.avg, 0) / ms.length), ms.length); })
+                       : ps.map((p, i) => mk(i, p.name, p.name, p.avg, 1));
+  S = { game: 'mission', seed: 1 + Math.floor(Math.random() * 2e9), players: ps, teams, rounds: cfg.rounds, holders, turn: 0, over: false };
+  SEED = S.seed; hist = []; mNext(true); save(); render();
+}
+function mNext(first) {
+  const N = S.players.length; if (!first) S.turn++;
+  for (let k = 0; k < N; k++) if (!mDone(mHolder((S.turn + k) % N))) { S.turn += k; const h = mHolder(S.turn % N); if (!h.mission) mNew(h); return; }
+  S.over = true;
+}
+function mMark(ok) {
+  snap(); sound(ok ? 'big' : 'bad');
+  const N = S.players.length, h = mHolder(S.turn % N);
+  if (!S.teams) { h.hist.push(ok ? 1 : 0); if (ok) h.done++; h.g.round++; h.mission = null; toast(ok ? '✔ GEHAALD!' : '✘ NIET GEHAALD', ok ? 'ok' : 'bad'); }
+  else {
+    h.got.push(ok);
+    if (h.got.length >= h.members) { const all = h.got.every(Boolean); h.hist.push(all ? 1 : 0); if (all) h.done++; h.g.round++; h.got = []; h.mission = null; toast(all ? '✔ TEAM GEHAALD!' : '✘ TEAM NIET GEHAALD', all ? 'ok' : 'bad'); }
+    else toast(ok ? '✔ JOUW DEEL!' : '✘ NIET GEHAALD', ok ? 'ok' : 'bad');
+  }
+  mNext(false); save(); render();
+}
+function throwDart(num, opt) {                                  // opt: { mult, x, y } als de pijl op het dartbord is aangeklikt
+  let m = num === 0 ? 0 : opt && opt.mult !== undefined ? opt.mult : mult; if (num === 25 && m === 3) m = 2;      // triple bull bestaat niet
+  const d = { num, mult: m, value: num * m }; if (opt && opt.x !== undefined) { d.x = opt.x; d.y = opt.y; }
+  snap();
+  const G = S.game === 'killer' ? KL : TYR, p = S.players[S.cur];
+  S.tn.darts.push(d);
+  const r = G.onDart(p, d) || {}; if (r.msg) { S.tn.flash = r.msg; toast(r.msg, r.kind || 'info', 1300); } sound(r.snd || 'tick');
+  mult = 1;
+  if (!S.over && S.tn.darts.length >= 3) finishTurn(true); else { save(); render(); }
+}
+function finishTurn(auto) {
+  if (!auto) snap();
+  const G = S.game === 'killer' ? KL : TYR, p = S.players[S.cur];
+  p.g.lastDarts = S.tn.darts.map(x => ({ ...x })); p.g.lastHits = (S.tn.log || []).length;
+  if (!S.over) { const r = G.onTurnEnd(p) || {}; if (r.msg) { S.last = { who: p.name, msg: r.msg }; toast(r.msg, r.kind || 'info', 2200); if (r.snd) sound(r.snd); } }
+  if (!S.over) G.next();
+  S.tn = { darts: [] }; mult = 1; save(); render();
+}
+function nextAlive() {                                                // volgende speler die nog meedoet
+  const N = S.players.length;
+  for (let k = 1; k <= N; k++) { const i = (S.cur + k) % N; if (!S.players[i].g.dead && !S.players[i].g.out) { S.cur = i; return; } }
+}
+function win(p, text) { S.over = true; S.winner = { name: p.name, idx: p.idx, text }; }
+
+// ---------- KILLER ----------
+const KMAX = 3;
+const KL = {
+  setup(i, hard) { return { num: S.nums[i], shields: hard ? KMAX : 0, killer: false, dead: false, kills: 0 }; },
+  isK: g => S.hard ? g.killer : g.shields >= KMAX,
+  alive: () => S.players.filter(q => !q.g.dead),
+  foes: p => KL.alive().filter(q => q !== p),
+  onDart(p, d) {
+    const g = p.g, tn = S.tn, hard = S.hard; tn.log = tn.log || [];
+    if (g.dead || d.num < 1 || d.num > 20 || d.mult < 1) return;
+    if (d.num === g.num) {                                          // eigen getal: schilden erbij
+      const add = hard ? (d.mult >= 2 ? 1 : 0) : d.mult; if (!add) { d.sub = '✗'; return { msg: 'Alleen double of triple telt', kind: 'bad' }; }
+      const before = g.shields, wasK = KL.isK(g); g.shields = Math.min(KMAX, g.shields + add); if (hard || g.shields >= KMAX) g.killer = true;
+      const gained = g.shields - before, became = !wasK && KL.isK(g);
+      if (!gained && !became) { d.sub = '🛡'; return { msg: '🛡 al vol' }; }
+      if (became) { d.sub = '☠'; tn.log.push('killer!'); return { msg: '☠ KILLER!', kind: 'ok', snd: 'big' }; }
+      d.sub = `+${gained} 🛡`; tn.log.push(`+${gained} 🛡`); return { msg: `+${gained} 🛡`, kind: 'ok', snd: 'ok' };
+    }
+    const v = S.players.find(q => !q.g.dead && q.g.num === d.num);   // het getal van een ander: afgooien
+    if (!v || v === p || !KL.isK(g)) return;
+    const dmg = hard ? (d.mult >= 2 ? 1 : 0) : d.mult; if (!dmg) { d.sub = '✗'; return { msg: 'Alleen double of triple telt', kind: 'bad' }; }
+    if (dmg > v.g.shields) {
+      d.sub = '☠'; v.g.dead = true; v.g.shields = 0; g.kills++; tn.log.push(`${v.name} is dood`);
+      const alive = KL.alive(); if (alive.length === 1) win(alive[0], 'laatste overlevende');
+      return { msg: `☠ ${v.name} uitgeschakeld`, kind: 'bad', snd: 'big' };
+    }
+    d.sub = `-${dmg} 🛡`; const wasK = KL.isK(v.g); v.g.shields -= dmg; tn.log.push(`${v.name} -${dmg} 🛡`);
+    return { msg: `${v.name} -${dmg} 🛡` + (wasK && !KL.isK(v.g) ? ' (geen killer meer)' : ''), kind: 'bad', snd: 'bad' };
+  },
+  onTurnEnd(p) {},
+  next: nextAlive,
+};
+function startKiller() {
+  const cfg = setups.killer, ps = clean(cfg.players), seed = 1 + Math.floor(Math.random() * 2e9); SEED = seed;
+  const nums = shuffleSeeded(Array.from({ length: 20 }, (_, i) => i + 1), seed ^ 0x51ed270b);
+  S = { game: 'killer', seed, hard: !!cfg.hard, nums, players: ps.map((p, i) => ({ ...p, idx: i, g: { num: nums[i], shields: cfg.hard ? KMAX : 0, killer: false, dead: false, kills: 0 } })), cur: 0, tn: { darts: [] }, over: false };
+  hist = []; save(); render();
+}
+// ---------- gedeelde onderdelen van het overlay-uiterlijk (Missie en Killer) ----------
+function mountStage(key, stageInner) {
+  document.body.classList.add('ty'); app.classList.add('wide'); app.dataset.m = key; app.dataset.seed = S.seed;
+  app.innerHTML = `<div class="tytools"><button id="stop" title="Stoppen">✕</button></div><div class="tyapp"><div class="tystage"><div id="tyhead"></div>${stageInner}</div><div class="tyside" id="tyside"></div></div>`;
+  wireTop();
+}
+const needMount = key => app.dataset.m !== key || app.dataset.seed != S.seed;
+const headHTML = (cur, goal, nDarts) => `<div class="tturn" style="--tc:${col(cur.idx)}"><span><b>${esc(cur.name)}</b> · ${goal}</span>${nDarts === undefined ? '' : `<span class="darts3">${[0, 1, 2].map(i => dartIcon(i < nDarts)).join('')}</span>`}</div>`;
+const pillsHTML = ds => [0, 1, 2].map(i => { const d = ds[i]; return `<div class="tpill ${d ? 'on' : ''}"><b>${d ? esc(d.label || dartTxt(d)) : '·'}</b><span>${d ? esc(d.sub || (d.value ? '+' + d.value : '')) : ''}</span></div>`; }).join('');
+function sideCard(o) {                                                     // o: { c, name, tag, big, sub, pills, total: [getal, bijschrift], next, extra, stats, active, dead }
+  return `<div class="tcard ${o.active ? 'active' : ''} ${o.dead ? 'dead' : ''}" style="--accent:${o.c}"><div class="ttop"><span>${esc(o.name)}</span><span class="ttag">${esc(o.tag)}</span><span class="tnow">AAN DE BEURT</span></div>
+    <div class="tpoints">${o.big}</div>${o.extra || ''}<div class="tsub">${o.sub || ''}</div>
+    ${o.pills ? `<div class="tthrow"><div class="tpills">${o.pills}</div>${o.total ? `<div class="ttotal"><b>${o.total[0]}</b><span>${o.total[1]}</span></div>` : ''}</div>` : ''}
+    ${o.active && o.next ? `<div class="tnext">${o.next}</div>` : ''}${o.stats ? `<div class="tstats">${o.stats.map(([v, l]) => `<div><b>${v}</b>${l}</div>`).join('')}</div>` : ''}</div>`;
+}
+const miniRow = o => `<div class="tmini ${o.dead ? 'dead' : ''}" style="--accent:${o.c}"><span class="mn">${esc(o.name)}</span><span class="mex">${o.ex || ''}</span><span class="mv">${o.val}</span></div>`;
+
+// ---------- Missie-scherm ----------
+const misDots = h => `<div class="mis-dots">${Array.from({ length: S.rounds }, (_, k) => `<i class="${h.hist[k] === 1 ? 'y' : h.hist[k] === 0 ? 'n' : ''}"></i>`).join('')}</div>`;
+function renderMission() {
+  if (needMount('mis')) mountStage('mis', `<div class="misbox" id="misbox"></div><div class="misact"><button class="big bad" id="no">✘ Niet gehaald</button><button class="big go" id="yes">✔ Gehaald</button></div>
+    <div class="misbar"><button class="ghost" id="undo">↶ Ongedaan maken</button><button class="ghost" id="re">🎲 Andere opdracht</button></div>`);
+  const N = S.players.length, pi = S.turn % N, h = mHolder(pi), p = S.players[pi], c = col(h.idx);
+  const sub = S.teams ? `${esc(h.short)} · ${h.got.length + 1}e van ${h.members} spelers · ronde ${h.g.round + 1}/${S.rounds}` : `ronde ${h.g.round + 1}/${S.rounds}`;
+  $('#tyhead').innerHTML = headHTML(p, sub);
+  const pr = h.mission && h.mission.pr ? `Kans voor jouw niveau: ± ${h.mission.pr}%` : '';
+  const box = $('#misbox'); box.style.setProperty('--tc', c); box.innerHTML = `<small>opdracht voor ${S.teams ? esc(h.short) : esc(p.name)}</small>${esc(mText(h))}<em>${pr}</em>`;
+  $('#undo').disabled = !hist.length;
+  $('#yes').onclick = () => mMark(true); $('#no').onclick = () => mMark(false); $('#undo').onclick = undo;
+  $('#re').onclick = () => { mNew(mHolder(S.turn % N)); save(); render(); };
+  const many = S.holders.length > 2;
+  $('#tyside').className = 'tyside';
+  $('#tyside').innerHTML = S.holders.map(x => {
+    const act = x === h, cc = col(x.idx), failed = x.hist.filter(v => v === 0).length;
+    if (many && !act) return miniRow({ c: cc, name: x.short, val: '✔ ' + x.done, ex: misDots(x) });
+    return sideCard({ c: cc, name: x.short, tag: S.teams ? 'TEAM' : 'SPELER ' + (x.idx + 1), big: '✔ ' + x.done, extra: misDots(x), active: act,
+      sub: S.teams ? esc(x.name) : `ronde ${Math.min(x.g.round + (act ? 1 : 0), S.rounds)}/${S.rounds}`, next: `Gooi je 3 pijlen en geef aan of het gelukt is`, stats: [[x.done, 'gehaald'], [failed, 'niet gehaald'], [Math.max(0, S.rounds - x.g.round), 'te gaan']] });
+  }).join('');
+}
+
+// ---------- Killer-scherm ----------
+const SHIELD_D = 'M0,-8.4 L6.4,-5.6 L6.4,0.9 Q6.4,6.4 0,9.2 Q-6.4,6.4 -6.4,0.9 L-6.4,-5.6 Z';
+const SKULL_SVG = c => `<g><circle cx="0" cy="-1" r="6.6" fill="#f4f1ea" stroke="#111" stroke-width=".9"/><rect x="-3.7" y="3.6" width="7.4" height="4.2" rx="1.2" fill="#f4f1ea" stroke="#111" stroke-width=".9"/>
+  <circle cx="-2.6" cy="-1.4" r="1.9" fill="#111"/><circle cx="2.6" cy="-1.4" r="1.9" fill="#111"/><path d="M0,1 L-1.1,3 L1.1,3 Z" fill="#111"/><path d="M-1.2,4.2 V7.6 M1.2,4.2 V7.6" stroke="#111" stroke-width=".7"/></g>`;
+function klWedge(b, num, c, ringsOnly) {
+  const i = ORDER.indexOf(num); if (i < 0) return;
+  const o = { fill: c, 'fill-opacity': .3, stroke: c, 'stroke-width': 2.4, class: 'tgt pulse', style: `filter: drop-shadow(0 0 5px ${c})` };
+  if (ringsOnly) { svgEl('path', { d: wedge(R.triIn, R.triOut, i * 18 - 9, i * 18 + 9), ...o }, b); svgEl('path', { d: wedge(R.dblIn, R.dblOut, i * 18 - 9, i * 18 + 9), ...o }, b); }
+  else svgEl('path', { d: wedge(R.bullOut, R.dblOut, i * 18 - 9, i * 18 + 9), ...o }, b);
+}
+function drawKillerBoard(b) {
+  dartboardBase(b);
+  const cur = S.players[S.cur];
+  for (const q of S.players) {                                            // schilden en schedel IN het vak van elke speler
+    const g = q.g, i = ORDER.indexOf(g.num), a = i * 18, c = col(q.idx), grp = svgEl('g', {}, b);
+    svgEl('path', { d: wedge(R.bullOut, R.dblOut, a - 9, a + 9), fill: g.dead ? '#000' : c, 'fill-opacity': g.dead ? .62 : .24, stroke: g.dead ? '#555' : c, 'stroke-width': g.dead ? 1 : 2 }, grp);
+    if (g.dead) { const [x, y] = pol(110, a); svgEl('path', { d: `M${x - 13},${y - 13} L${x + 13},${y + 13} M${x + 13},${y - 13} L${x - 13},${y + 13}`, stroke: '#ff4d5e', 'stroke-width': 5, 'stroke-linecap': 'round', opacity: .9 }, grp); continue; }
+    const [sx, sy] = pol(135, a);
+    svgEl('rect', { x: sx - 21, y: sy - 11, width: 42, height: 22, rx: 11, fill: 'rgba(0,0,0,.5)' }, grp);
+    for (let k = 0; k < KMAX; k++) {
+      const full = k < g.shields, s = svgEl('g', { transform: `translate(${sx + (k - 1) * 14.5} ${sy}) scale(.98)` }, grp);
+      svgEl('path', { d: SHIELD_D, fill: full ? c : 'rgba(0,0,0,.45)', stroke: full ? '#fff' : c, 'stroke-width': full ? 1.5 : 1.1, 'stroke-dasharray': full ? '' : '2.4 1.8' }, s);
+      if (full) svgEl('path', { d: 'M-3.4,-3.6 L0,-5.2 L0,5.2 Q-3.4,3.6 -3.4,0.6 Z', fill: 'rgba(255,255,255,.38)' }, s);
+    }
+    if (KL.isK(g)) { const [kx, ky] = pol(76, a); const s = svgEl('g', { transform: `translate(${kx} ${ky}) scale(1.15)`, class: 'skull-on' }, grp); s.innerHTML = SKULL_SVG(c); }
+  }
+  if (!cur.g.dead) {                                                      // wat moet de speler aan de beurt raken: eigen getal (wit), aan te vallen getallen (rood)
+    const k = KL.isK(cur.g);
+    if (!k || (!S.hard && cur.g.shields < KMAX)) klWedge(b, cur.g.num, '#ffffff', S.hard);
+    if (k) KL.foes(cur).forEach(f => klWedge(b, f.g.num, '#ff4d5e', S.hard));
+  }
+  S.tn.darts.forEach((d, k) => { if (d.x === undefined) return; const g = svgEl('g', { transform: `translate(${d.x},${-d.y})` }, b); svgEl('circle', { r: 9, fill: '#fff', stroke: '#111', 'stroke-width': 2 }, g); const t = svgEl('text', { y: .5, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 10, 'font-weight': 800, fill: '#111' }, g); t.textContent = k + 1; });
+}
+const klRow = (g, c, killer) => {
+  const sh = i => `<svg viewBox="-8 -10 16 21" width="34" height="44"><path d="${SHIELD_D}" fill="${i < g.shields ? c : 'rgba(0,0,0,.35)'}" stroke="${i < g.shields ? '#fff' : c}" stroke-width="1.5" ${i < g.shields ? '' : 'stroke-dasharray="2.5 2"'}/>${i < g.shields ? '<path d="M-3.4,-3.6 L0,-5.2 L0,5.2 Q-3.4,3.6 -3.4,0.6 Z" fill="rgba(255,255,255,.35)"/>' : ''}</svg>`;
+  const sk = `<svg viewBox="-9 -10 18 20" width="40" height="44" class="${killer ? 'skull-on' : ''}" style="opacity:${killer ? 1 : .22}">${SKULL_SVG(c)}</svg>`;
+  return `<div class="kl-row ${g.dead ? 'dead' : ''}">${[0, 1, 2].map(sh).join('')}${sk}</div>`;
+};
+let kPad = false; try { kPad = localStorage.getItem('darts-party-kpad') === '1'; } catch (e) {}
+function renderKiller() {
+  if (needMount('kl')) mountStage('kl', `<div class="kwrap"><svg id="kb" viewBox="-215 -215 430 430"></svg></div><div class="tycenter kpadc" id="kctl"></div>`);
+  const cur = S.players[S.cur], g = cur.g, hard = S.hard, k = KL.isK(g), foes = KL.foes(cur), tn = S.tn;
+  const goal = !k ? (hard ? `double of triple ${g.num}` : `je eigen ${g.num}`) : `val aan: ${foes.map(f => f.g.num).join(' · ')}`;
+  $('#tyhead').innerHTML = headHTML(cur, goal, tn.darts.length);
+  $('.kwrap').classList.toggle('small', kPad);
+  const kb = $('#kb'); drawKillerBoard(kb);
+  kb.onclick = e => { const pt = kb.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(kb.getScreenCTM().inverse()), h = hitFromMM(p.x, -p.y); audio(); throwDart(h.num, { mult: h.mult, x: Math.round(p.x), y: Math.round(-p.y) }); };
+  const ms = [[1, 'Single'], [2, 'Double'], [3, 'Triple']].map(([m, l]) => `<button data-m="${m}" class="${mult === m ? 'on' : ''}">${l}</button>`).join('');
+  const own = n => (!k || (!hard && g.shields < KMAX)) && n === g.num || (k && foes.some(f => f.g.num === n));
+  const nums = Array.from({ length: 20 }, (_, i) => `<button data-n="${i + 1}" class="${own(i + 1) ? 'tg' : ''}">${i + 1}</button>`).join('');
+  const ctl = $('#kctl'); ctl.style.setProperty('--tc', col(cur.idx));
+  ctl.innerHTML = `<div class="cin">${kPad ? `<div class="cmults">${ms}</div><div class="cnums">${nums}<button data-n="0" style="grid-column: span 10">Mis</button></div>` : ''}
+    <div class="cfoot"><button id="undo" ${hist.length ? '' : 'disabled'}>↶ Pijl terug</button><button id="kmode">${kPad ? '🎯 Alleen bord' : '⌨ Knoppen'}</button><button id="endturn">Beurt afronden ⏭</button></div></div>`;
+  ctl.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mult = +b.dataset.m; audio(); render(); });
+  ctl.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { audio(); throwDart(+b.dataset.n); });
+  $('#undo').onclick = undo; $('#endturn').onclick = () => { audio(); finishTurn(); };
+  $('#kmode').onclick = () => { kPad = !kPad; try { localStorage.setItem('darts-party-kpad', kPad ? '1' : '0'); } catch (e) {} render(); };
+  let next;
+  if (!k) next = hard ? `Raak <b>double of triple ${g.num}</b> om killer te worden` : `Raak je eigen <b>${g.num}</b>: single 1 · double 2 · triple 3 schilden (nog <b>${KMAX - g.shields}</b> tot killer)`;
+  else next = `Val aan: ${foes.map(f => `<b>${f.g.num}</b> (${esc(f.name)}, ${f.g.shields}🛡)`).join(' · ')}${hard ? ' · double of triple = 1 schild' : ' · single 1 · double 2 · triple 3'}`;
+  if (tn.log && tn.log.length) next = `<b>${esc(tn.log.join(' · '))}</b><br>` + next;
+  const many = S.players.length > 2;
+  $('#tyside').className = 'tyside' + (S.players.length > 4 ? ' many' : '');
+  $('#tyside').innerHTML = S.players.map(p => {
+    const c = col(p.idx), act = p === cur, kk = KL.isK(p.g);
+    if (many && !act) return miniRow({ c, name: p.name, dead: p.g.dead, val: p.g.dead ? '☠' : p.g.num, ex: p.g.dead ? '' : '🛡'.repeat(p.g.shields) + (kk ? '☠' : '') });
+    const ds = act ? tn.darts : (p.g.lastDarts || []), hits = act ? (tn.log || []).length : (p.g.lastHits || 0);
+    return sideCard({ c, name: p.name, tag: 'SPELER ' + (p.idx + 1), big: p.g.dead ? '☠' : p.g.num, extra: klRow(p.g, c, kk), active: act, dead: p.g.dead,
+      sub: p.g.dead ? 'uitgeschakeld' : '', pills: pillsHTML(ds), total: [hits, act ? 'treffers' : 'laatste beurt'], next, stats: [[p.g.kills, 'kills'], [p.g.shields, 'schilden'], [kk ? 'ja' : 'nee', 'killer']] });
+  }).join('');
+}
+
+// ---------- TYCOON (Monopoly) ----------
+const TYK = { startMoney: 1500, startBonus: 200, jailFine: 50, tax: 100, maxHouses: 5, jailIdx: 7 };
+const TY_LAYOUT = ['start', 'p', 'p', 'kans', 'p', 'p', 'p', 'cel', 'p', 'p', 'p', 'tax', 'p', 'p', 'park', 'p', 'p', 'kans', 'p', 'p', 'p', 'goto', 'p', 'p', 'p', 'bull', 'p', 'p'];
+const TY_GROUP = { 1: 0, 2: 0, 4: 1, 5: 1, 6: 1, 8: 2, 9: 2, 10: 2, 12: 3, 13: 3, 15: 4, 16: 4, 18: 5, 19: 5, 20: 5, 22: 6, 23: 6, 24: 6, 26: 7, 27: 7, 25: 8 };
+const TY_COST = [50, 50, 100, 100, 150, 150, 200, 200, 100];
+const TY_COLORS = ['#955436', '#aae0fa', '#d93a96', '#f7941d', '#ed1b24', '#fef200', '#1fb25a', '#0072bb', '#8b93a3'];
+const TY_ICON = { start: '▶', kans: '❓', tax: '💸', park: '🅿️', goto: '🚔', cel: '⛓️' };
+function makeTiles(seed) {
+  const nums = shuffleSeeded(Array.from({ length: 20 }, (_, i) => i + 1), seed ^ 0x9e3779b9); let k = 0;
+  return TY_LAYOUT.map((type, i) => {
+    if (type === 'p') { const g = TY_GROUP[i]; return { type: 'prop', num: nums[k++], group: g, cost: TY_COST[g] }; }
+    if (type === 'bull') return { type: 'prop', num: 25, group: 8, cost: TY_COST[8], bull: true };
+    return { type };
+  });
+}
+const tyNum = tile => tile.num === 25 ? 'Bull' : String(tile.num);
+const tyGroupIdx = grp => S.tiles.map((x, i) => x.type === 'prop' && x.group === grp ? i : -1).filter(i => i >= 0);
+const tyOwnsSet = (pi, grp) => grp !== 8 && tyGroupIdx(grp).every(i => S.owners[i] === pi);
+const tyRent = i => { const tile = S.tiles[i], o = S.owners[i], h = S.houses[i] || 0; return Math.round(tile.cost * 0.3 * h * (tyOwnsSet(o, tile.group) ? 2 : 1)); };
+const tyWorth = p => p.g.money + Object.keys(S.houses).filter(i => S.owners[i] === p.idx).reduce((a, i) => a + S.houses[i] * S.tiles[i].cost, 0);
+function tyAct(p) {                                                  // welke rake pijl is er te winnen op de tegel waar je staat?
+  if (p.g.out) return null; if (p.g.jailed) return { type: 'cel' };
+  const tile = S.tiles[p.g.pos]; if (tile.type !== 'prop') return null;
+  const o = S.owners[p.g.pos]; if (o !== undefined && o !== p.idx) return null;
+  if ((S.houses[p.g.pos] || 0) >= TYK.maxHouses || p.g.money < tile.cost) return null;
+  return { type: 'koop', num: tile.num, idx: p.g.pos, tile };
+}
+function tyCard(p) {
+  const k = Math.floor(rng((S.seed + S.rolls * 7919) | 0)() * 8); S.rolls++;
+  const N = S.tiles.length, g = p.g, others = S.players.filter(q => q !== p && !q.g.out);
+  switch (k) {
+    case 0: g.money += 100; return 'Kans: verjaardag, +€100';
+    case 1: g.money -= 60; return 'Kans: reparatie, -€60';
+    case 2: g.pos = (g.pos - 3 + N) % N; return 'Kans: 3 vakken terug';
+    case 3: g.money += 150; return 'Kans: belastingteruggave, +€150';
+    case 4: g.pos = 0; g.money += TYK.startBonus; return `Kans: naar START, +€${TYK.startBonus}`;
+    case 5: g.pos = TYK.jailIdx; g.jailed = true; return 'Kans: rechtstreeks naar de cel';
+    case 6: g.money -= 100; S.pot += 100; return 'Kans: boete, -€100 (naar de pot)';
+    default: { let got = 0; for (const q of others) { q.g.money -= 40; got += 40; } g.money += got; return `Kans: verjaardag, +€${got} van de anderen`; }
+  }
+}
+function tyBankrupt(p) { p.g.out = true; p.g.money = 0; for (const i of Object.keys(S.owners)) if (S.owners[i] === p.idx) { delete S.owners[i]; delete S.houses[i]; } }
+function tyPending(p) { const tn = S.tn, a = tn.darts.length > 0 ? tn.act : tyAct(p); return a && !tn.raked ? a : null; }
+const TYR = {                                                        // regels van Tycoon (zelfde opbouw als KL)
+  onDart(p, d) {
+    const g = p.g, tn = S.tn; tn.sum = tn.sum || 0;
+    if (tn.darts.length === 1) tn.act = tyAct(p);
+    if (g.out) return;
+    const a = tn.act;
+    if (a && !tn.raked) {
+      if (a.type === 'cel') {
+        if (d.mult === 2) { tn.raked = true; g.jailed = false; g.jailFails = 0; tn.msg = 'vrij uit de cel!'; d.label = 'DOUBLE ✓'; d.sub = 'vrij'; return { msg: '⛓️ Vrij uit de cel!', kind: 'ok', snd: 'big' }; }
+      } else if (d.num === a.num && d.mult > 0) {
+        tn.raked = true;
+        const have = S.houses[a.idx] || 0, n = Math.min(d.mult, TYK.maxHouses - have, Math.floor(g.money / a.tile.cost));
+        if (n > 0) {
+          g.money -= n * a.tile.cost; S.owners[a.idx] = p.idx; S.houses[a.idx] = have + n; tn.bought = (tn.bought || 0) + n;
+          tn.msg = `${n} ${n === 1 ? 'huis' : 'huizen'} op ${tyNum(a.tile)} (€${n * a.tile.cost})`; d.label = `${n}× 🏠`; d.sub = n === 1 ? 'huis' : 'huizen';
+          tyFlash = { idx: a.idx, until: Date.now() + 1600 }; setTimeout(() => { if (S && S.game === 'tycoon') render(); }, 1700);
+          return { msg: `🏠 ${n} ${n === 1 ? 'huis' : 'huizen'}!`, kind: 'ok', snd: 'big' };
+        }
+        return;
+      }
+    }
+    tn.sum += d.value;                                              // elke andere pijl is een worp
+  },
+  onTurnEnd(p) {
+    const g = p.g, tn = S.tn; if (g.out) return;
+    const msgs = [], wasJailed = g.jailed; if (tn.msg) msgs.push(tn.msg);
+    g.played++; let steps = 0, snd = null, kind = 'info'; g.lastDarts = tn.darts.map(x => ({ ...x }));
+    if (g.jailed) { g.jailFails++; msgs.push('nog in de cel'); if (g.jailFails >= 2) { g.money -= TYK.jailFine; S.pot += TYK.jailFine; g.jailed = false; g.jailFails = 0; msgs.push(`€${TYK.jailFine} boete, vrij`); } }
+    else if ((tn.sum || 0) > 0) steps = Math.max(1, Math.round(tn.sum / 10));
+    if (steps > 0) {
+      const N = S.tiles.length, old = g.pos; g.pos = (old + steps) % N; msgs.unshift(`${steps} stappen`);
+      if (old + steps >= N) { g.money += TYK.startBonus; msgs.push(`langs START: +€${TYK.startBonus}`); snd = 'ok'; }
+      const tile = S.tiles[g.pos];
+      if (tile.type === 'prop') {
+        const o = S.owners[g.pos];
+        if (o !== undefined && o !== p.idx) { const rent = tyRent(g.pos), q = S.players[o]; g.money -= rent; q.g.money += rent; msgs.push(`huur €${rent} aan ${q.name}`); snd = 'bad'; kind = 'bad'; }
+      } else if (tile.type === 'kans') { msgs.push(tyCard(p)); }
+      else if (tile.type === 'tax') { g.money -= TYK.tax; S.pot += TYK.tax; msgs.push(`belasting €${TYK.tax}`); snd = 'bad'; }
+      else if (tile.type === 'park') { if (S.pot > 0) { g.money += S.pot; msgs.push(`vrij parkeren: pot €${S.pot}`); S.pot = 0; snd = 'big'; kind = 'ok'; } }
+      else if (tile.type === 'goto') { g.pos = TYK.jailIdx; g.jailed = true; msgs.push('naar de cel'); snd = 'bad'; }
+    } else if (!g.jailed && !tn.msg) msgs.push('geen stappen');
+    g.last = { sum: tn.sum || 0, steps };
+    if (g.money < 0) { tyBankrupt(p); msgs.push('FAILLIET'); snd = 'bad'; kind = 'bad'; }
+    // einde van het spel?
+    const alive = S.players.filter(q => !q.g.out);
+    if (S.players.length > 1 && alive.length === 1) win(alive[0], `de rest is failliet (€${tyWorth(alive[0])})`);
+    else if (alive.length && alive.every(q => q.g.played >= S.rounds)) { const top = alive.reduce((a, q) => tyWorth(q) > tyWorth(a) ? q : a, alive[0]); win(top, `grootste vermogen: €${tyWorth(top)}`); }
+    return { msg: p.name + ': ' + msgs.join(' · '), kind, snd };
+  },
+  next: nextAlive,
+};
+function startTycoon() {
+  const cfg = setups.tycoon, ps = clean(cfg.players), seed = 1 + Math.floor(Math.random() * 2e9); SEED = seed;
+  S = { game: 'tycoon', seed, rounds: cfg.rounds, tiles: makeTiles(seed), owners: {}, houses: {}, pot: 0, rolls: 0,
+        players: ps.map((p, i) => ({ ...p, idx: i, g: { money: TYK.startMoney, pos: 0, jailed: false, jailFails: 0, out: false, played: 0 } })), cur: 0, tn: { darts: [] }, last: null, over: false };
+  hist = []; save(); render();
+}
+// ---- Monopoly-scherm: zelfde uiterlijk als de overlay (bord met tegels en pionnen), met de bediening in het midden
+const SVGNS = 'http://www.w3.org/2000/svg';
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const wedge = (r1, r2, a0, a1) => { const [x1, y1] = pol(r2, a0), [x2, y2] = pol(r2, a1), [x3, y3] = pol(r1, a1), [x4, y4] = pol(r1, a0); return `M${x1},${y1} A${r2},${r2} 0 0 1 ${x2},${y2} L${x3},${y3} A${r1},${r1} 0 0 0 ${x4},${y4}Z`; };
+const dartIcon = on => `<svg class="dart-ic${on ? ' on' : ''}" viewBox="0 0 46 20"><path class="fill" d="M2 10 L10 7 L30 7 L30 13 L10 13 Z M30 8.2 L44 2 L40 10 L44 18 L30 11.8 Z"/></svg>`;
+const TB = { half: 280, d: 64, w: 72, band: 14 };
+function tyRect(i) {
+  const { half, d, w } = TB, e = half - d;
+  if (i === 0) return { x: e, y: e, w: d, h: d, side: 'corner' };
+  if (i < 7) return { x: e - w * i, y: e, w, h: d, side: 'bottom' };
+  if (i === 7) return { x: -half, y: e, w: d, h: d, side: 'corner' };
+  if (i < 14) return { x: -half, y: e - w * (i - 7), w: d, h: w, side: 'left' };
+  if (i === 14) return { x: -half, y: -half, w: d, h: d, side: 'corner' };
+  if (i < 21) return { x: -e + w * (i - 15), y: -half, w, h: d, side: 'top' };
+  if (i === 21) return { x: e, y: -half, w: d, h: d, side: 'corner' };
+  return { x: e, y: -e + w * (i - 22), w: d, h: w, side: 'right' };
+}
+function tyPos(i, depth, lat = 0) {
+  const r = tyRect(i);
+  switch (r.side) {
+    case 'bottom': return [r.x + r.w / 2 + lat, r.y + depth];
+    case 'top': return [r.x + r.w / 2 + lat, r.y + r.h - depth];
+    case 'left': return [r.x + r.w - depth, r.y + r.h / 2 + lat];
+    case 'right': return [r.x + depth, r.y + r.h / 2 + lat];
+    default: return [r.x + r.w / 2 + lat, r.y + r.h / 2 + (depth - 32)];
+  }
+}
+function tyContent(i) {
+  const r = tyRect(i), b = TB.band;
+  switch (r.side) {
+    case 'bottom': return [r.x + r.w / 2, r.y + b + (r.h - b) / 2];
+    case 'top': return [r.x + r.w / 2, r.y + (r.h - b) / 2];
+    case 'left': return [r.x + (r.w - b) / 2, r.y + r.h / 2];
+    case 'right': return [r.x + b + (r.w - b) / 2, r.y + r.h / 2];
+    default: return [r.x + r.w / 2, r.y + r.h / 2];
+  }
+}
+function tyPawnPos(i, slot) {
+  const r = tyRect(i);
+  switch (r.side) {
+    case 'bottom': return [r.x + r.w / 2 + slot, r.y + r.h - 4];
+    case 'top': return [r.x + r.w / 2 + slot, r.y + 4];
+    case 'left': return [r.x + 4, r.y + r.h / 2 + slot];
+    case 'right': return [r.x + r.w - 4, r.y + r.h / 2 + slot];
+    default: return [r.x + r.w / 2 + slot, r.y + r.h - 6];
+  }
+}
+let centerMode = 'pad', gTrack = null, gPawns = null, tyFlash = null;
+try { centerMode = localStorage.getItem('darts-party-center') === 'board' ? 'board' : 'pad'; } catch (e) {}
+const pawnEls = new Map();
+function mountTycoon() {
+  document.body.classList.add('ty'); app.classList.add('wide'); app.dataset.m = 'ty'; app.dataset.seed = S.seed; pawnEls.clear();
+  app.innerHTML = `<div class="tytools"><button id="stop" title="Stoppen">✕</button></div><div class="tyapp"><div class="tystage"><div id="tyhead"></div>
+    <div class="boardwrap"><svg id="tyboard" viewBox="-296 -296 592 592"></svg><div class="tycenter" id="tycenter"></div></div></div><div class="tyside" id="tyside"></div></div>`;
+  const b = $('#tyboard');
+  svgEl('rect', { x: -292, y: -292, width: 584, height: 584, rx: 14, fill: '#0d2a1f', stroke: '#c9a24a', 'stroke-width': 2.5 }, b);      // groene vilt, gouden rand
+  svgEl('rect', { x: -216, y: -216, width: 432, height: 432, fill: '#1b5a42' }, b);
+  gTrack = svgEl('g', {}, b); gPawns = svgEl('g', {}, b); wireTop();
+}
+function drawTrack(cur, projIdx) {
+  gTrack.innerHTML = '';
+  const F = 'Bahnschrift, Segoe UI, sans-serif', INK = '#1b2a22', PAPER = '#efe8d0';
+  const txt = (parent, x, y, s, size, fill = INK, weight = 800) => { const e = svgEl('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': size, 'font-weight': weight, fill, 'font-family': F }, parent); e.textContent = s; return e; };
+  S.tiles.forEach((tile, i) => {
+    const r = tyRect(i), g = svgEl('g', {}, gTrack), owner = S.owners[i];
+    svgEl('rect', { x: r.x, y: r.y, width: r.w, height: r.h, fill: PAPER, stroke: '#26352c', 'stroke-width': 1 }, g);
+    const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+    if (tile.type === 'prop') {
+      const c = TY_COLORS[tile.group], b = TB.band;
+      const band = { bottom: [r.x, r.y, r.w, b], top: [r.x, r.y + r.h - b, r.w, b], left: [r.x + r.w - b, r.y, b, r.h], right: [r.x, r.y, b, r.h] }[r.side];
+      svgEl('rect', { x: band[0], y: band[1], width: band[2], height: band[3], fill: c, stroke: '#26352c', 'stroke-width': .8 }, g);
+      const [ux, uy] = tyContent(i);
+      txt(g, ux, uy - 8, tile.bull ? 'BULL' : tile.num, tile.bull ? 15 : 21); txt(g, ux, uy + 9, '€' + tile.cost, 8.5, '#4a5a50', 700);
+      const h = S.houses[i] || 0, horiz = r.side === 'bottom' || r.side === 'top';
+      const place = (k, n) => { const off = (k - (n - 1) / 2) * 13, [bx, by] = tyPos(i, b / 2, 0); return horiz ? [bx + off, by] : [bx, by + off]; };
+      if (h >= TYK.maxHouses) { const [bx, by] = tyPos(i, b / 2, 0); svgEl('path', { d: `M${bx - 8},${by + 4.5} L${bx - 8},${by - 1} L${bx - 3},${by - 5.5} L${bx + 3},${by - 1} L${bx + 8},${by - 1} L${bx + 8},${by + 4.5} Z`, fill: '#ed1b24', stroke: '#3b0608', 'stroke-width': .8 }, g); }
+      else for (let k = 0; k < h; k++) { const [bx, by] = place(k, h); svgEl('path', { d: `M${bx - 4.5},${by + 4} L${bx - 4.5},${by - 1} L${bx},${by - 5} L${bx + 4.5},${by - 1} L${bx + 4.5},${by + 4} Z`, fill: '#1fb25a', stroke: '#06220f', 'stroke-width': .8 }, g); }
+      if (owner !== undefined) svgEl('rect', { x: r.x + 1.6, y: r.y + 1.6, width: r.w - 3.2, height: r.h - 3.2, fill: 'none', stroke: col(owner), 'stroke-width': 3.2 }, g);
+    } else if (tile.type === 'start') { txt(g, cx, cy - 12, 'START', 13, '#c3282d'); txt(g, cx, cy + 4, '+€' + TYK.startBonus, 9, INK, 700); txt(g, cx, cy + 20, '◀', 16, '#c3282d'); }
+    else if (tile.type === 'cel') { txt(g, cx, cy - 6, 'CEL', 15); txt(g, cx, cy + 12, 'bezoek', 8.5, '#4a5a50', 700); for (let k = -2; k <= 2; k++) svgEl('rect', { x: cx + k * 6 - 1, y: cy + 20, width: 2, height: 9, fill: INK }, g); }
+    else if (tile.type === 'park') { txt(g, cx, cy - 14, 'VRIJ', 12); txt(g, cx, cy - 2, 'PARKEREN', 9.5); txt(g, cx, cy + 16, S.pot ? '€' + S.pot : 'pot leeg', 11, '#1b7a4a'); }
+    else if (tile.type === 'goto') { txt(g, cx, cy - 12, 'NAAR', 11); txt(g, cx, cy, 'DE CEL', 11); txt(g, cx, cy + 17, '▶|', 14, '#c3282d'); }
+    else if (tile.type === 'kans') { const [ux, uy] = tyContent(i); txt(g, ux, uy - 14, 'KANS', 10, '#b45a00'); txt(g, ux, uy + 5, '?', 24, '#f7941d'); }
+    else if (tile.type === 'tax') { const [ux, uy] = tyContent(i); txt(g, ux, uy - 8, 'BELASTING', 8.2); txt(g, ux, uy + 8, '€' + TYK.tax, 13, '#c3282d'); }
+    for (const pq of S.players) {                                        // wie staat waar: de speler aan de beurt gloeit en pulseert
+      if (pq.g.pos !== i || pq.g.out) continue;
+      const c = col(pq.idx);
+      if (pq === cur) svgEl('rect', { x: r.x + 1.5, y: r.y + 1.5, width: r.w - 3, height: r.h - 3, fill: c, 'fill-opacity': .34, stroke: c, 'stroke-width': 5.5, class: 'tgt pulse', style: `filter: drop-shadow(0 0 8px ${c})` }, g);
+      else svgEl('rect', { x: r.x + 3, y: r.y + 3, width: r.w - 6, height: r.h - 6, fill: c, 'fill-opacity': .14, stroke: c, 'stroke-width': 3, 'stroke-dasharray': '7 4' }, g);
+    }
+    if (projIdx === i) svgEl('rect', { x: r.x + 2, y: r.y + 2, width: r.w - 4, height: r.h - 4, fill: '#fff', 'fill-opacity': .16, stroke: '#fff', 'stroke-width': 3.2, 'stroke-dasharray': '8 4' }, g);
+    if (tyFlash && tyFlash.idx === i && Date.now() < tyFlash.until) svgEl('rect', { x: r.x, y: r.y, width: r.w, height: r.h, fill: 'none', stroke: '#fff', 'stroke-width': 7, class: 'tgt pulse', style: 'filter: drop-shadow(0 0 10px #fff)' }, g);
+  });
+  // pionnen: lopen vakje voor vakje mee
+  const N = S.tiles.length, many = S.players.length > 3;
+  S.players.forEach((p, k) => {
+    let pw = pawnEls.get(p.idx);
+    if (!pw) {
+      const g = svgEl('g', { class: 'pawn' }, gPawns), c = svgEl('circle', { r: 11, fill: col(p.idx), stroke: '#fff', 'stroke-width': 2.2 }, g);
+      txt(g, 0, .5, (p.name || '?')[0].toUpperCase(), 12.5, '#07101a');
+      pw = { g, c, shown: p.g.pos, timer: 0 }; pawnEls.set(p.idx, pw); g.style.transition = 'transform .16s linear';
+    }
+    pw.g.style.display = p.g.out ? 'none' : '';
+    pw.c.setAttribute('r', (p === cur ? 13.5 : 10.5) * (many ? .78 : 1)); pw.g.style.filter = p === cur ? `drop-shadow(0 0 7px ${col(p.idx)})` : '';
+    pw.slot = (k - (S.players.length - 1) / 2) * (many ? 62 / S.players.length : 25);
+    const put = idx => { const [x, y] = tyPawnPos(idx, pw.slot); pw.g.style.transform = `translate(${x}px, ${y}px)`; };
+    const walk = () => {
+      if (pw.shown === p.g.pos) { put(pw.shown); pw.timer = 0; return; }
+      const fwd = (p.g.pos - pw.shown + N) % N;
+      pw.shown = fwd > N * .75 ? p.g.pos : (pw.shown + 1) % N;            // bijna een hele ronde = een stukje terug (kans-kaart): direct erheen
+      put(pw.shown); sound('tick'); pw.timer = setTimeout(walk, 190);
+    };
+    clearTimeout(pw.timer); put(pw.shown); if (pw.shown !== p.g.pos) walk();
+  });
+}
+function dartboardBase(b) {                                              // het dartbord zelf (zelfde uiterlijk als de overlay)
+  b.innerHTML = '';
+  svgEl('circle', { r: 203, fill: '#05070b' }, b); svgEl('circle', { r: 196, fill: '#0c1018', stroke: '#222a3a', 'stroke-width': 1.5 }, b);
+  ORDER.forEach((n, i) => {
+    const a0 = i * 18 - 9, a1 = i * 18 + 9, even = i % 2 === 0, single = even ? '#161b24' : '#e9dfc4', ring = even ? '#d6303f' : '#1f9a5b';
+    svgEl('path', { d: wedge(R.bullOut, R.dblIn, a0, a1), fill: single }, b); svgEl('path', { d: wedge(R.triIn, R.triOut, a0, a1), fill: ring }, b); svgEl('path', { d: wedge(R.dblIn, R.dblOut, a0, a1), fill: ring }, b);
+    const [tx, ty] = pol(184, i * 18); const t = svgEl('text', { x: tx, y: ty, fill: '#eef2f8', 'font-size': 17, 'font-weight': 700, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'Bahnschrift, Segoe UI, sans-serif' }, b); t.textContent = n;
+  });
+  svgEl('circle', { r: R.bullOut, fill: '#1f9a5b' }, b); svgEl('circle', { r: R.bullIn, fill: '#d6303f' }, b);
+  for (let i = 0; i < 20; i++) { const [x1, y1] = pol(R.bullOut, i * 18 - 9), [x2, y2] = pol(R.dblOut, i * 18 - 9); svgEl('line', { x1, y1, x2, y2, stroke: '#9aa3b2', 'stroke-width': .5, opacity: .7 }, b); }
+  for (const r of [R.bullOut, R.triIn, R.triOut, R.dblIn, R.dblOut]) svgEl('circle', { r, fill: 'none', stroke: '#9aa3b2', 'stroke-width': .5, opacity: .7 }, b);
+}
+function drawDartboard(b, hint, darts) {                                 // het klikbare dartbord in het midden
+  dartboardBase(b);
+  if (hint) {                                                             // het te raken getal (of de dubbelring in de cel): wit en pulserend
+    const style = 'filter: drop-shadow(0 0 6px #fff)';
+    if (hint.type === 'cel') svgEl('circle', { r: 166, fill: 'none', stroke: '#fff', 'stroke-width': 9, 'stroke-opacity': .9, class: 'tgt pulse', style }, b);
+    else { const i = ORDER.indexOf(hint.num), o = { fill: '#fff', 'fill-opacity': .32, stroke: '#fff', 'stroke-width': 3, class: 'tgt pulse', style }; if (i >= 0) svgEl('path', { d: wedge(R.bullOut, R.dblOut, i * 18 - 9, i * 18 + 9), ...o }, b); else svgEl('circle', { r: R.bullOut, ...o }, b); }
+  }
+  darts.forEach((d, k) => { if (d.x === undefined) return; const g = svgEl('g', { transform: `translate(${d.x},${-d.y})` }, b); svgEl('circle', { r: 9, fill: '#fff', stroke: '#111', 'stroke-width': 2 }, g); const t = svgEl('text', { y: .5, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 10, 'font-weight': 800, fill: '#111' }, g); t.textContent = k + 1; });
+}
+function tyCenter(cur, a, sum, steps) {
+  const tn = S.tn, d3 = [0, 1, 2].map(i => { const d = tn.darts[i]; return `<div class="cp ${d ? 'on' : ''}"><b>${d ? esc(d.label || dartTxt(d)) : '·'}</b><span>${d ? esc(d.sub || (d.value ? '+' + d.value : '')) : ''}</span></div>`; }).join('');
+  const hdr = `<div class="chead">${d3}<div class="ctot"><b>${sum}</b><span>${steps ? steps + (steps === 1 ? ' stap' : ' stappen') : 'worp'}</span></div><button id="cmode" title="${centerMode === 'pad' ? 'Dartbord tonen' : 'Knoppen tonen'}">${centerMode === 'pad' ? '🎯' : '⌨'}</button></div>`;
+  const ftr = `<div class="cfoot"><button id="undo" ${hist.length ? '' : 'disabled'}>↶ Pijl terug</button><button id="endturn">Beurt afronden ⏭</button></div>`;
+  let mid;
+  if (centerMode === 'board') mid = `<div class="cmid"><svg id="cb" viewBox="-205 -205 410 410"></svg></div>`;
+  else {
+    const ms = [[1, 'Single'], [2, 'Double'], [3, 'Triple']].map(([m, l]) => `<button data-m="${m}" class="${mult === m ? 'on' : ''} ${a && a.type === 'cel' && m === 2 ? 'tg' : ''}">${l}</button>`).join('');
+    const nums = Array.from({ length: 20 }, (_, i) => `<button data-n="${i + 1}" class="${a && a.num === i + 1 ? 'tg' : ''}">${i + 1}</button>`).join('');
+    mid = `<div class="cmid pad"><div class="cmults">${ms}</div><div class="cnums">${nums}<button data-n="25" class="w3 ${a && a.num === 25 ? 'tg' : ''}">Bull</button><button data-n="0" class="w3">Mis</button></div></div>`;
+  }
+  return `<div class="cin">${hdr}${mid}${ftr}</div>`;
+}
+function renderTycoon() {
+  if (app.dataset.m !== 'ty' || app.dataset.seed != S.seed) mountTycoon();
+  const cur = S.players[S.cur], g = cur.g, a = tyPending(cur), tn = S.tn;
+  const sum = tn.sum || 0, steps = sum > 0 ? Math.max(1, Math.round(sum / 10)) : 0, projIdx = steps && !g.jailed && tn.darts.length ? (g.pos + steps) % S.tiles.length : -1;
+  const goal = g.out ? 'failliet' : a ? (a.type === 'cel' ? 'gooi een double (cel)' : `raak de ${a.num === 25 ? 'Bull' : a.num} · huis €${a.tile.cost}`) : 'gooi voor stappen';
+  $('#tyhead').innerHTML = `<div class="tturn" style="--tc:${col(cur.idx)}"><span><b>${esc(cur.name)}</b> · ${goal}</span><span class="darts3">${[0, 1, 2].map(i => dartIcon(i < tn.darts.length)).join('')}</span></div>`;
+  drawTrack(cur, projIdx);
+  const cen = $('#tycenter'); cen.style.setProperty('--tc', col(cur.idx)); cen.innerHTML = tyCenter(cur, a, sum, steps);
+  const cb = $('#cb');
+  if (cb) {
+    drawDartboard(cb, a, tn.darts);
+    cb.onclick = e => { const pt = cb.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(cb.getScreenCTM().inverse()), h = hitFromMM(p.x, -p.y); audio(); throwDart(h.num, { mult: h.mult, x: Math.round(p.x), y: Math.round(-p.y) }); };
+  }
+  cen.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mult = +b.dataset.m; audio(); render(); });
+  cen.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { audio(); throwDart(+b.dataset.n); });
+  $('#undo').onclick = undo; $('#endturn').onclick = () => { audio(); finishTurn(); };
+  $('#cmode').onclick = () => { centerMode = centerMode === 'pad' ? 'board' : 'pad'; try { localStorage.setItem('darts-party-center', centerMode); } catch (e) {} render(); };
+  // spelerskaarten rechts: de speler aan de beurt groot, de rest klein (bij meer dan twee spelers)
+  const tile = S.tiles[g.pos];
+  const where = p => { const t = S.tiles[p.g.pos]; if (p.g.out) return 'failliet'; if (t.type === 'prop') { const o = S.owners[p.g.pos], h = S.houses[p.g.pos] || 0; return `${tyNum(t)} · ${o !== undefined ? (o === p.idx ? 'van jou' : 'van ' + esc(S.players[o].name)) + ` (${h} ${h === 1 ? 'huis' : 'huizen'})` : 'vrij (€' + t.cost + ' per huis)'}`; } return { start: 'START', kans: 'Kans', tax: 'Belasting', park: `Vrij parkeren (pot €${S.pot})`, goto: 'Naar de cel', cel: p.g.jailed ? 'in de cel' : 'Cel (bezoek)' }[t.type]; };
+  let next;
+  if (g.out) next = 'failliet';
+  else if (tn.darts.length) { next = steps ? `Je staat nu op <b>stap ${steps}</b> · nog <b>${10 * steps + 5 - sum}</b> voor 1 stap meer` : 'Nog geen stappen gegooid'; if (a) next += ` · <b>${a.type === 'cel' ? 'double' : 'raak de ' + (a.num === 25 ? 'Bull' : a.num)}</b> nog te gooien`; if (tn.msg) next = `<b>${esc(tn.msg)}</b><br>` + next; }
+  else if (g.jailed) next = 'Gooi een <b>double</b> om uit de cel te komen';
+  else if (a) next = `Raak de <b>${a.num === 25 ? 'Bull' : a.num}</b> voor een huis (€${a.tile.cost}): single 1 · double 2 · triple 3`;
+  else next = 'Gooi voor stappen: totaal ÷ 10';
+  if (!tn.darts.length && S.last) next = `<b>${esc(S.last.msg)}</b><br>` + next;
+  const stats = p => { const mine = Object.keys(S.owners).filter(i => S.owners[i] === p.idx); return [mine.length, mine.reduce((x, i) => x + (S.houses[i] || 0), 0)]; };
+  const many = S.players.length > 2;
+  $('#tyside').className = 'tyside' + (S.players.length > 4 ? ' many' : '');
+  $('#tyside').innerHTML = S.players.map(p => {
+    const c = col(p.idx), [np, nh] = stats(p), act = p === cur;
+    if (many && !act) return `<div class="tmini ${p.g.out ? 'dead' : ''}" style="--accent:${c}"><span class="mn">${esc(p.name)}</span><span class="mex">${np} 🏠${nh}</span><span class="mv">€${p.g.money}</span></div>`;
+    const ds = act ? tn.darts : (p.g.lastDarts || []), pills = [0, 1, 2].map(i => { const d = ds[i]; return `<div class="tpill ${d ? 'on' : ''}"><b>${d ? esc(d.label || dartTxt(d)) : '·'}</b><span>${d ? esc(d.sub || (d.value ? '+' + d.value : '')) : ''}</span></div>`; }).join('');
+    const tot = act ? sum : (p.g.last ? p.g.last.sum : 0), st = act ? steps : (p.g.last ? p.g.last.steps : 0);
+    return `<div class="tcard ${act ? 'active' : ''}" style="--accent:${c}"><div class="ttop"><span>${esc(p.name)}</span><span class="ttag">SPELER ${p.idx + 1}</span><span class="tnow">AAN DE BEURT</span></div>
+      <div class="tpoints">€${p.g.money}</div><div class="tsub">${where(p)} · beurt ${Math.min(p.g.played + (act ? 1 : 0), S.rounds)}/${S.rounds}</div>
+      <div class="tthrow"><div class="tpills">${pills}</div><div class="ttotal"><b>${tot}</b><span>${act ? (steps ? steps + ' stappen' : 'worp') : 'laatste worp · ' + st + (st === 1 ? ' stap' : ' stappen')}</span></div></div>
+      ${act ? `<div class="tnext">${next}</div>` : ''}<div class="tstats"><div><b>${np}</b>panden</div><div><b>${nh}</b>huizen</div><div><b>€${tyWorth(p)}</b>vermogen</div></div></div>`;
+  }).join('');
+}
+
+// ---------- hub, instellen, einde ----------
+const NAMES = { mission: 'Missie', killer: 'Killer', tycoon: 'Monopoly' };
+const RULES = {
+  mission: 'Elke beurt krijg je een opdracht (bijvoorbeeld "gooi drie veelvouden van 5"). Gooi 3 pijlen en geef zelf aan of het gehaald is. Wie na de laatste ronde de meeste opdrachten haalde, wint. Met teams moet iedereen in het team slagen.',
+  killer: 'Iedereen heeft een eigen getal. Makkelijk: raak je eigen getal voor schilden (single 1, double 2, triple 3). Met 3 schilden ben je killer en haal je schilden van anderen af door hun getal te raken. Is de klap groter dan zijn schilden, dan is hij dood. Moeilijk: iedereen begint met 3 schilden; een double of triple op je eigen getal maakt je killer, en alleen doubles en triples doen schade (1 schild). De laatste overlevende wint.',
+  tycoon: 'Monopoly op het dartbord. Je gooit 3 pijlen: het totaal gedeeld door 10 is je aantal stappen over het speelbord. Staat je tegel vrij (of is hij van jou), dan koop je huizen door dat getal te raken: single 1, double 2, triple 3 huizen (die pijl telt niet mee voor je stappen). Op andermans pand betaal je huur. Kans, belasting, vrij parkeren (de pot!) en de cel (gooi een double). Wie na de laatste ronde het meeste vermogen heeft, wint.',
+};
+function topbar() { return `<div class="topbar"><b>${NAMES[S.game]}</b><button class="ghost" id="stop">Stoppen</button></div>`; }
+function wireTop() { const s = $('#stop'); if (s) s.onclick = quit; }
+function renderHub() {
+  app.innerHTML = `<h1>🎯 Darts Party</h1><p class="sub">Kies een spel. Geen Autodarts nodig: jullie geven zelf aan wat er gegooid is.</p><div class="hub">
+    <button data-g="mission"><span class="em">🎲</span><span><b>Missie</b><span class="d">Elke beurt een willekeurige opdracht. Gehaald of niet?</span></span></button>
+    <button data-g="killer"><span class="em">☠️</span><span><b>Killer</b><span class="d">Schilden verdienen, killer worden en de rest uitschakelen.</span></span></button>
+    <button data-g="tycoon"><span class="em">🏠</span><span><b>Monopoly</b><span class="d">Rond het bord, koop huizen met je pijlen, en word de rijkste.</span></span></button></div>`;
+  app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { view = b.dataset.g; render(); });
+}
+function renderSetup(game) {
+  const cfg = setups[game], withAvg = game === 'mission', n = cfg.players.length;
+  const rows = cfg.players.map((p, i) => `<label class="row"><span class="dot" style="background:${col(i)}"></span>
+    <input data-n="${i}" placeholder="Speler ${i + 1}" value="${esc(p.name)}" maxlength="16" autocomplete="off">
+    ${withAvg ? `<select data-a="${i}">${LEVELS.map(([v, l]) => `<option value="${v}" ${v == p.avg ? 'selected' : ''}>${l} (${v})</option>`).join('')}</select>` : ''}
+    ${n > 2 ? `<button class="ghost" data-del="${i}" aria-label="Verwijder">✕</button>` : ''}</label>`).join('');
+  const seg = (id, key, opts) => `<div class="seg" id="${id}">${opts.map(([v, l]) => `<button data-opt="${key}" data-v="${v}" class="${String(cfg[key]) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  let opts = '';
+  if (game === 'mission') {
+    const tOpts = [[0, 'Ieder voor zich']].concat(n >= 2 ? [[2, '2 teams']] : [], n >= 3 ? [[3, '3 teams']] : []); if (cfg.teams && !tOpts.some(o => o[0] === cfg.teams)) cfg.teams = 0;
+    opts = `<div class="card"><small class="k">Aantal rondes</small>${seg('r', 'rounds', [5, 8, 10, 15, 20].map(x => [x, x]))}</div>
+      <div class="card"><small class="k">Teams</small>${seg('t', 'teams', tOpts)}${cfg.teams ? '<p class="sub" style="margin:10px 0 0">Spelers wisselen elkaar af (1, 3, 5 = team 1). Iedereen in het team moet de opdracht halen.</p>' : ''}</div>`;
+  } else if (game === 'killer') opts = `<div class="card"><small class="k">Versie</small>${seg('h', 'hard', [[false, 'Makkelijk'], [true, 'Moeilijk']])}</div>`;
+  else opts = `<div class="card"><small class="k">Aantal beurten per speler</small>${seg('r', 'rounds', [8, 12, 16, 20].map(x => [x, x]))}</div>`;
+  app.innerHTML = `<div class="topbar"><button class="ghost" id="back">‹ Spellen</button></div><h1>${NAMES[game]}</h1><details><summary>Uitleg</summary><p>${RULES[game]}</p></details>
+    <div class="card"><small class="k">Spelers${withAvg ? ' en niveau (gemiddelde per 3 pijlen)' : ''}</small>${rows}${n < 6 ? '<button id="add" class="ghost">+ Speler erbij</button>' : ''}</div>${opts}<button class="big go" id="start">Start spel</button>`;
+  $('#back').onclick = () => { view = 'hub'; render(); };
+  app.querySelectorAll('input[data-n]').forEach(el => el.oninput = () => { cfg.players[+el.dataset.n].name = el.value; save(); });
+  app.querySelectorAll('select[data-a]').forEach(el => el.onchange = () => { cfg.players[+el.dataset.a].avg = +el.value; save(); });
+  app.querySelectorAll('[data-del]').forEach(el => el.onclick = () => { cfg.players.splice(+el.dataset.del, 1); save(); render(); });
+  const add = $('#add'); if (add) add.onclick = () => { cfg.players.push(withAvg ? { name: '', avg: 45 } : { name: '' }); save(); render(); };
+  app.querySelectorAll('[data-opt]').forEach(el => el.onclick = () => { const v = el.dataset.v; cfg[el.dataset.opt] = v === 'true' ? true : v === 'false' ? false : +v; save(); render(); });
+  $('#start').onclick = () => { audio(); ({ mission: startMission, killer: startKiller, tycoon: startTycoon })[game](); };
+}
+function renderEnd() {
+  let head, rows;
+  if (S.game === 'mission') {
+    const rank = [...S.holders].sort((a, b) => b.done - a.done), best = rank[0].done, tie = rank.filter(h => h.done === best).length > 1;
+    head = tie ? 'Gelijkspel aan de top' : esc(rank[0].name) + ' wint';
+    rows = rank.map(h => `<div class="rank ${h.done === best ? 'w' : ''}"><span class="dot" style="background:${col(h.idx)}"></span>${esc(h.name)}<span class="sc">✔ ${h.done} / ${S.rounds}</span></div>`).join('');
+  } else if (S.game === 'killer') {
+    head = esc(S.winner.name) + ' wint · ' + S.winner.text;
+    rows = [...S.players].sort((a, b) => (a.g.dead - b.g.dead) || b.g.kills - a.g.kills).map(p => `<div class="rank ${p.idx === S.winner.idx ? 'w' : ''}"><span class="dot" style="background:${col(p.idx)}"></span>${esc(p.name)}<span class="sc">${p.g.kills} ${p.g.kills === 1 ? 'kill' : 'kills'}</span></div>`).join('');
+  } else {
+    head = esc(S.winner.name) + ' wint · ' + S.winner.text;
+    rows = [...S.players].sort((a, b) => tyWorth(b) - tyWorth(a)).map(p => `<div class="rank ${p.idx === S.winner.idx ? 'w' : ''}"><span class="dot" style="background:${col(p.idx)}"></span>${esc(p.name)}${p.g.out ? ' (failliet)' : ''}<span class="sc">€${tyWorth(p)}</span></div>`).join('');
+  }
+  app.innerHTML = `<h1>🏆 Klaar!</h1><p class="sub">${head}</p>${rows}<div style="height:10px"></div><button class="big go" id="again">Nog een keer (zelfde spelers)</button><div style="height:10px"></div><button id="new" class="ghost">Ander spel kiezen</button>`;
+  sound('big');
+  const g = S.game;
+  $('#again').onclick = () => { audio(); ({ mission: startMission, killer: startKiller, tycoon: startTycoon })[g](); };
+  $('#new').onclick = () => { S = null; hist = []; view = 'hub'; save(); render(); };
+}
+function render() {
+  if (!(S && !S.over && S.game === 'tycoon')) { delete app.dataset.m; app.classList.remove('wide'); document.body.classList.remove('ty'); }
+  if (!S) return view === 'hub' ? renderHub() : renderSetup(view);
+  if (S.over) return renderEnd();
+  ({ mission: renderMission, killer: renderKiller, tycoon: renderTycoon })[S.game]();
+}
+try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+document.addEventListener('visibilitychange', () => { try { if (!document.hidden && navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {} });
+if (typeof pickMission !== 'function') app.innerHTML = '<h1>Bibliotheek niet geladen</h1><p class="sub">dart-lib.js ontbreekt. Gebruik het losse bestand Darts-Party.html.</p>'; else render();
+</script>
+</body>
+</html>
